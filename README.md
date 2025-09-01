@@ -40,7 +40,10 @@ net.core.wmem_default=20971520
 ## Build examples
 To build the examples inside this reposity:
 ```
-  sh build.sh
+  mkdir build
+  cd build
+  cmake .. -DBUILD_EXAMPLES=ON
+  make -j8
 ```
 
 ## Doc
@@ -59,7 +62,7 @@ Build Sphinx documentation：
 Enter doc/build/html directory, and open `index.html`
 
 
-## C++ SDK Installation
+### C++ SDK Installation
 
 To build your own application with this SDK, you can install the magicbot_z1_sdk to specified directory:
 ```
