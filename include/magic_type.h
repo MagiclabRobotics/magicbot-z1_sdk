@@ -198,25 +198,20 @@ enum class GaitMode : int32_t {
  * @brief 人形机器人动作指令枚举（对应动作ID）
  */
 enum class TrickAction : int32_t {
-  ACTION_NONE = 0,                             // 无特技, 默认
-  ACTION_CELEBRATE = 201,                      // 庆祝
-  ACTION_SHAKE_LEFT_HAND_REACHOUT = 215,       // 握手（左手）-伸出
-  ACTION_SHAKE_LEFT_HAND_WITHDRAW = 216,       // 握手（左手）-撤回
-  ACTION_SHAKE_RIGHT_HAND_REACHOUT = 217,      // 握手（右手）-伸出
-  ACTION_SHAKE_RIGHT_HAND_WITHDRAW = 218,      // 握手（右手）-撤回
-  ACTION_SHAKE_HEAD = 220,                     // 摇头
-  ACTION_LEFT_GREETING = 300,                  // 打招呼（左手）
-  ACTION_RIGHT_GREETING = 301,                 // 打招呼（右手）
-  ACTION_TRUN_AWAY_LEFT_INTRODUCE = 306,       // 左转身介绍-朝后
-  ACTION_TRUN_BACK_LEFT_INTRODUCE = 307,       // 左转身介绍-撤回
-  ACTION_WELCOME = 340,                        // 欢迎
-  ACTION_WAVE_BACK = 341,                      // 挥手回礼
-  ACTION_REACHOUT_LEFT_HAND_INTRODUCE = 342,   // 左手外伸介绍-伸出
-  ACTION_WITHDRAW_LEFT_HAND_INTRODUCE = 343,   // 左手外伸介绍-撤回
-  ACTION_REACHOUT_RIGHT_HAND_INTRODUCE = 344,  // 右手外伸介绍-伸出
-  ACTION_WITHDRAW_RIGHT_HAND_INTRODUCE = 345,  // 右手外伸介绍-撤回
-  ACTION_GET_UP = 350,                         // 倒地起身
-  ACTION_BACK_BRIDGE = 351,                    // 下腰臀桥
+  ACTION_NONE = 0,                         // 无特技, 默认
+  ACTION_CELEBRATE = 201,                  // 庆祝
+  ACTION_SHAKE_LEFT_HAND_REACHOUT = 215,   // 握手（左手）-伸出
+  ACTION_SHAKE_LEFT_HAND_WITHDRAW = 216,   // 握手（左手）-撤回
+  ACTION_SHAKE_RIGHT_HAND_REACHOUT = 217,  // 握手（右手）-伸出
+  ACTION_SHAKE_RIGHT_HAND_WITHDRAW = 218,  // 握手（右手）-撤回
+  ACTION_SHAKE_HEAD = 220,                 // 摇头
+  ACTION_LEFT_GREETING = 300,              // 打招呼（左手）
+  ACTION_RIGHT_GREETING = 301,             // 打招呼（右手）
+  ACTION_TRUN_LEFT_INTRODUCE_HIGH = 304,   // 左转身介绍-朝后
+  ACTION_TRUN_LEFT_INTRODUCE_LOW = 305,    // 左转身介绍-撤回
+  ACTION_TRUN_RIGHT_INTRODUCE_HIGH = 306,  // 右转身介绍-朝后
+  ACTION_TRUN_RIGHT_INTRODUCE_LOW = 307,   // 右转身介绍-撤回
+  ACTION_WELCOME = 340,                    // 欢迎
 };
 
 /**
@@ -374,11 +369,11 @@ typedef struct tts_cmd {
  * @brief IMU 数据结构体，包含时间戳、姿态、角速度、加速度和温度信息
  */
 struct Imu {
-  int64_t timestamp;              ///< 时间戳（单位：纳秒），表示该IMU数据采集的时间点
-  double orientation[4];          ///< 姿态四元数（w, x, y, z），用于表示空间姿态，避免欧拉角万向锁问题
-  double angular_velocity[3];     ///< 角速度（单位：rad/s），绕X、Y、Z轴的角速度，通常来自陀螺仪
-  double linear_acceleration[3];  ///< 线加速度（单位：m/s^2），X、Y、Z轴的线性加速度，通常来自加速度计
-  float temperature;              ///< 温度（单位：摄氏度或其他，应在使用时明确）
+  int64_t timestamp;                          ///< 时间戳（单位：纳秒），表示该IMU数据采集的时间点
+  std::array<double, 4> orientation;          ///< 姿态四元数（w, x, y, z），用于表示空间姿态，避免欧拉角万向锁问题
+  std::array<double, 3> angular_velocity;     ///< 角速度（单位：rad/s），绕X、Y、Z轴的角速度，通常来自陀螺仪
+  std::array<double, 3> linear_acceleration;  ///< 线加速度（单位：m/s^2），X、Y、Z轴的线性加速度，通常来自加速度计
+  float temperature;                          ///< 温度（单位：摄氏度或其他，应在使用时明确）
 };
 
 /**
@@ -448,9 +443,9 @@ struct CameraInfo {
 
   std::vector<double> D;  ///< 畸变参数数组
 
-  double K[9];   ///< 相机内参矩阵
-  double R[9];   ///< 矫正矩阵
-  double P[12];  ///< 投影矩阵
+  std::array<double, 9> K;   ///< 相机内参矩阵
+  std::array<double, 9> R;   ///< 矫正矩阵
+  std::array<double, 12> P;  ///< 投影矩阵
 
   int32_t binning_x;  ///< 水平binning系数
   int32_t binning_y;  ///< 垂直binning系数
