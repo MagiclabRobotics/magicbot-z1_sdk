@@ -33,6 +33,9 @@ int main() {
     return -1;
   }
 
+  // 设置rpc超时时间为10s
+  robot.SetTimeout(10000);
+
   // 连接机器人
   auto status = robot.Connect();
   if (status.code != ErrorCode::OK) {
