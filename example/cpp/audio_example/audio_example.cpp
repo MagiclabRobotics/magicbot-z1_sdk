@@ -14,41 +14,41 @@ void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received.\n";
 
   robot.Shutdown();
-  // 退出进程
+  // Exit process
   exit(signum);
 }
 
 void print_help(const char* prog_name) {
-  std::cout << "按键功能演示程序\n\n";
-  std::cout << "用法: " << prog_name << "\n";
-  std::cout << "按键功能说明:\n";
-  std::cout << "  ESC      退出程序\n";
-  std::cout << "  1        功能1:获取音量\n";
-  std::cout << "  2        功能2:设置音量\n";
-  std::cout << "  3        功能3:播放语音\n";
-  std::cout << "  4        功能4:停止播放\n";
-  std::cout << "  5        功能5:打开音频流\n";
-  std::cout << "  6        功能6:关闭音频流\n";
-  std::cout << "  7        功能7:订阅音频流\n";
+  std::cout << "Key Function Demo Program\n\n";
+  std::cout << "Usage: " << prog_name << "\n";
+  std::cout << "Key Function Description:\n";
+  std::cout << "  ESC      Exit program\n";
+  std::cout << "  1        Function 1: Get volume\n";
+  std::cout << "  2        Function 2: Set volume\n";
+  std::cout << "  3        Function 3: Play voice\n";
+  std::cout << "  4        Function 4: Stop playback\n";
+  std::cout << "  5        Function 5: Open audio stream\n";
+  std::cout << "  6        Function 6: Close audio stream\n";
+  std::cout << "  7        Function 7: Subscribe audio stream\n";
 }
 
 int getch() {
   struct termios oldt, newt;
   int ch;
-  tcgetattr(STDIN_FILENO, &oldt);  // 获取当前终端设置
+  tcgetattr(STDIN_FILENO, &oldt);  // Get current terminal settings
   newt = oldt;
-  newt.c_lflag &= ~(ICANON | ECHO);  // 关闭缓冲和回显
+  newt.c_lflag &= ~(ICANON | ECHO);  // Disable buffering and echo
   tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-  ch = getchar();                           // 读取按键
-  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);  // 恢复设置
+  ch = getchar();                           // Read key press
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);  // Restore settings
   return ch;
 }
 
 void GetVolume() {
-  // 获取音频控制器
+  // Get audio controller
   auto& controller = robot.GetAudioController();
 
-  // 获取音量
+  // Get volume
   int get_volume = 0;
   auto status = controller.GetVolume(get_volume);
   if (status.code != ErrorCode::OK) {
@@ -61,10 +61,10 @@ void GetVolume() {
 }
 
 void SetVolume() {
-  // 获取音频控制器
+  // Get audio controller
   auto& controller = robot.GetAudioController();
-  // 设置音量
-  auto status = controller.SetVolume(7);
+  // Set volume
+  auto status = controller.SetVolume(50);
   if (status.code != ErrorCode::OK) {
     std::cerr << "set volume failed"
               << ", code: " << status.code
@@ -75,12 +75,12 @@ void SetVolume() {
 }
 
 void PlayTts() {
-  // 获取音频控制器
+  // Get audio controller
   auto& controller = robot.GetAudioController();
-  // 播放语音
+  // Play voice
   TtsCommand tts;
   tts.id = "100000000001";
-  tts.content = "今天天气怎么样！";
+  tts.content = "How is the weather today!";
   tts.priority = TtsPriority::HIGH;
   tts.mode = TtsMode::CLEARTOP;
   auto status = controller.Play(tts);
@@ -94,9 +94,9 @@ void PlayTts() {
 }
 
 void StopTts() {
-  // 获取音频控制器
+  // Get audio controller
   auto& controller = robot.GetAudioController();
-  // 停止播放语音
+  // Stop playing voice
   auto status = controller.Stop();
   if (status.code != ErrorCode::OK) {
     std::cerr << "stop tts failed"
@@ -108,9 +108,9 @@ void StopTts() {
 }
 
 void OpenAudioStream() {
-  // 获取音频控制器
+  // Get audio controller
   auto& controller = robot.GetAudioController();
-  // 打开音频流
+  // Open audio stream
   auto status = controller.OpenAudioStream();
   if (status.code != ErrorCode::OK) {
     std::cerr << "open audio stream failed"
@@ -122,9 +122,9 @@ void OpenAudioStream() {
 }
 
 void CloseAudioStream() {
-  // 获取音频控制器
+  // Get audio controller
   auto& controller = robot.GetAudioController();
-  // 关闭音频流
+  // Close audio stream
   auto status = controller.CloseAudioStream();
   if (status.code != ErrorCode::OK) {
     std::cerr << "close audio stream failed"
@@ -136,10 +136,10 @@ void CloseAudioStream() {
 }
 
 void SubscribeAudioStream() {
-  // 获取音频控制器
+  // Get audio controller
   auto& controller = robot.GetAudioController();
 
-  // 订阅音频流
+  // Subscribe to audio stream
   controller.SubscribeOriginAudioStream([](const std::shared_ptr<AudioStream> data) {
     static int32_t counter = 0;
     if (counter++ % 30 == 0) {
@@ -157,23 +157,20 @@ void SubscribeAudioStream() {
 }
 
 int main(int argc, char* argv[]) {
-  // 绑定 SIGINT（Ctrl+C）
+  // Bind SIGINT (Ctrl+C)
   signal(SIGINT, signalHandler);
 
   print_help(argv[0]);
 
   std::string local_ip = "192.168.54.111";
-  // 配置本机网线直连机器的IP地址，并进行SDK初始化
+  // Configure local IP address for direct ethernet connection to robot and initialize SDK
   if (!robot.Initialize(local_ip)) {
     std::cerr << "robot sdk initialize failed." << std::endl;
     robot.Shutdown();
     return -1;
   }
 
-  // 设置rpc超时时间为10s
-  robot.SetTimeout(10000);
-
-  // 连接机器人
+  // Connect to robot
   auto status = robot.Connect();
   if (status.code != ErrorCode::OK) {
     std::cerr << "connect robot failed"
@@ -183,24 +180,24 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  std::cout << "按任意键继续 (ESC退出)..."
+  std::cout << "Press any key to continue (ESC to exit)..."
             << std::endl;
 
-  // 等待用户输入
+  // Wait for user input
   while (1) {
     int key = getch();
     if (key == 27)
-      break;  // ESC键ASCII码为27
+      break;  // ESC key ASCII code is 27
 
-    std::cout << "按键ASCII: " << key << ", 字符: " << static_cast<char>(key) << std::endl;
+    std::cout << "Key ASCII: " << key << ", Character: " << static_cast<char>(key) << std::endl;
     switch (key) {
       case '1': {
-        // 获取音量
+        // Get volume
         GetVolume();
         break;
       }
       case '2': {
-        // 设置音量
+        // Set volume
         SetVolume();
         break;
       }
@@ -225,12 +222,12 @@ int main(int argc, char* argv[]) {
         break;
       }
       default:
-        std::cout << "未知按键: " << key << std::endl;
+        std::cout << "Unknown key: " << key << std::endl;
         break;
     }
   }
 
-  // 断开与机器人的链接
+  // Disconnect from robot
   status = robot.Disconnect();
   if (status.code != ErrorCode::OK) {
     std::cerr << "disconnect robot failed"

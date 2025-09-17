@@ -17,26 +17,23 @@ void signalHandler(int signum) {
   running = false;
 
   robot.Shutdown();
-  // 退出进程
+  // Exit process
   exit(signum);
 }
 
 int main() {
-  // 绑定 SIGINT（Ctrl+C）
+  // Bind SIGINT (Ctrl+C)
   signal(SIGINT, signalHandler);
 
   std::string local_ip = "192.168.54.111";
-  // 配置本机网线直连机器的IP地址，并进行SDK初始化
+  // Configure local IP address for direct ethernet connection to robot and initialize SDK
   if (!robot.Initialize(local_ip)) {
     std::cerr << "robot sdk initialize failed." << std::endl;
     robot.Shutdown();
     return -1;
   }
 
-  // 设置rpc超时时间为10s
-  robot.SetTimeout(10000);
-
-  // 连接机器人
+  // Connect to robot
   auto status = robot.Connect();
   if (status.code != ErrorCode::OK) {
     std::cerr << "connect robot failed"
@@ -46,7 +43,7 @@ int main() {
     return -1;
   }
 
-  // 切换运控控制器为底层控制器，默认是高层控制器
+  // Switch motion controller to low-level controller, default is high-level controller
   status = robot.SetMotionControlLevel(ControllerLevel::LowLevel);
   if (status.code != ErrorCode::OK) {
     std::cerr << "switch robot motion control level failed"
@@ -56,13 +53,10 @@ int main() {
     return -1;
   }
 
-  // 获取底层控制器
+  // Get low-level controller
   auto& controller = robot.GetLowLevelMotionController();
 
-  // 设置控制指令发送周期为2ms，500HZ
-  controller.SetPeriodMs(2);
-
-  // 订阅imu数据
+  // Subscribe to IMU data
   controller.SubscribeBodyImu([](const std::shared_ptr<Imu> msg) {
     static int32_t count = 0;
     if (count++ % 1000 == 1) {
@@ -76,7 +70,7 @@ int main() {
     // TODO: handle imu data
   });
 
-  // 订阅手部数据
+  // Subscribe to arm data
   controller.SubscribeArmState([](const std::shared_ptr<JointState> msg) {
     static int32_t count = 0;
     if (count++ % 1000 == 1) {
@@ -91,31 +85,31 @@ int main() {
     // TODO: handle arm joint data
   });
 
-  // 以上臂关节控制为例：
-  // 后续关节控制指令，关节的操作模式为1，表示关节处于位置控制模式
+  // Using arm joint control as an example:
+  // Subsequent joint control commands, joint operation mode is 1, indicating joint is in position control mode
   while (running.load()) {
-    // 左臂关节，参考文档：
-    // 左臂或者右臂1-5关节operation_mode需要从模式：200切换到模式：4（串联PID模式）进行指令下发；
+    // Left arm joints, refer to documentation:
+    // Left or right arm joints 1-5 operation_mode needs to switch from mode 200 to mode 4 (series PID mode) for command execution;
     JointCommand arm_command;
     arm_command.joints.resize(kArmJointNum);
     for (int ii = 0; ii < kArmJointNum; ii++) {
-      // 设置关节处于准备状态
+      // Set joint to ready state
       arm_command.joints[ii].operation_mode = 200;
-      // TODO:设置目标位置、速度、力矩和增益
+      // TODO: Set target position, velocity, torque and gains
       arm_command.joints[ii].pos = 0.0;
       arm_command.joints[ii].vel = 0.0;
       arm_command.joints[ii].toq = 0.0;
       arm_command.joints[ii].kp = 0.0;
       arm_command.joints[ii].kd = 0.0;
     }
-    // 发布控制指令
+    // Publish control command
     controller.PublishArmCommand(arm_command);
 
-    // 500HZ的频率(2ms)下发控制指令
+    // Send control commands at 500Hz frequency (2ms)
     usleep(2000);
   }
 
-  // 断开与机器人的链接
+  // Disconnect from robot
   status = robot.Disconnect();
   if (status.code != ErrorCode::OK) {
     std::cerr << "disconnect robot failed"

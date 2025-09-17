@@ -33,6 +33,8 @@ def signal_handler(signum, frame):
 
 
 imu_counter = 0
+
+
 def lidar_imu_callback(imu_data):
     """LiDAR IMU data callback function"""
     global imu_counter
@@ -56,6 +58,8 @@ def lidar_imu_callback(imu_data):
 
 
 point_cloud_counter = 0
+
+
 def lidar_point_cloud_callback(point_cloud_data):
     """LiDAR point cloud data callback function"""
     global point_cloud_counter
@@ -82,9 +86,6 @@ def main():
             logging.error("Failed to initialize robot SDK")
             robot.shutdown()
             return -1
-
-        # Set RPC timeout to 10 seconds
-        robot.set_timeout(10000)
 
         # Connect to robot
         status = robot.connect()

@@ -81,7 +81,7 @@ def recovery_stand():
         controller = robot.get_high_level_motion_controller()
 
         # Set gait to recovery stand
-        status = controller.set_gait(magicbot.GaitMode.GAIT_RECOVERY_STAND)
+        status = controller.set_gait(magicbot.GaitMode.GAIT_RECOVERY_STAND, 10000)
         if status.code != magicbot.ErrorCode.OK:
             logging.error(
                 "Failed to set robot gait, code: %s, message: %s",
@@ -108,7 +108,7 @@ def balance_stand():
         controller = robot.get_high_level_motion_controller()
 
         # Set gait to balance stand
-        status = controller.set_gait(magicbot.GaitMode.GAIT_BALANCE_STAND)
+        status = controller.set_gait(magicbot.GaitMode.GAIT_BALANCE_STAND, 10000)
         if status.code != magicbot.ErrorCode.OK:
             logging.error(
                 "Failed to set robot gait, code: %s, message: %s",
@@ -135,7 +135,7 @@ def execute_trick_welcome():
         controller = robot.get_high_level_motion_controller()
 
         # Execute welcome trick
-        status = controller.execute_trick(magicbot.TrickAction.ACTION_WELCOME)
+        status = controller.execute_trick(magicbot.TrickAction.ACTION_WELCOME, 10000)
         if status.code != magicbot.ErrorCode.OK:
             logging.error(
                 "Failed to execute robot trick, code: %s, message: %s",
@@ -233,9 +233,6 @@ def main():
             logging.error("Failed to initialize robot SDK")
             robot.shutdown()
             return -1
-
-        # Set RPC timeout to 10 seconds
-        robot.set_timeout(10000)
 
         # Connect to robot
         status = robot.connect()

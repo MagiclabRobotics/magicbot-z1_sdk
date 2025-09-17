@@ -1,8 +1,3 @@
-/*
- * @FilePath: /humanoid_m1_sdk/sdk/include/magic_err.h
- * @Version: 1.0.0
- * Copyright © 2025 MagicLab.
- */
 #pragma once
 
 #include <cstdint>

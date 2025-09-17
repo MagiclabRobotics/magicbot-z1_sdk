@@ -209,9 +209,6 @@ def main():
             robot.shutdown()
             return -1
 
-        # Set RPC timeout to 10 seconds
-        robot.set_timeout(10000)
-
         # Connect to robot
         status = robot.connect()
         if status.code != magicbot.ErrorCode.OK:
@@ -240,10 +237,6 @@ def main():
 
         # Get low-level motion controller
         controller = robot.get_low_level_motion_controller()
-
-        # Set control command sending period to 2ms, 500Hz
-        controller.set_period_ms(2)
-        logging.info("Set control period to 2ms (500Hz)")
 
         # Subscribe to body IMU data
         controller.subscribe_body_imu(body_imu_callback)

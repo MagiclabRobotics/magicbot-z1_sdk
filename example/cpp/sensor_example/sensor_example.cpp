@@ -14,26 +14,23 @@ void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received.\n";
 
   robot.Shutdown();
-  // 退出进程
+  // Exit process
   exit(signum);
 }
 
 int main() {
-  // 绑定 SIGINT（Ctrl+C）
+  // Bind SIGINT (Ctrl+C)
   signal(SIGINT, signalHandler);
 
   std::string local_ip = "192.168.54.111";
-  // 配置本机网线直连机器的IP地址，并进行SDK初始化
+  // Configure local IP address for direct ethernet connection to robot and initialize SDK
   if (!robot.Initialize(local_ip)) {
     std::cerr << "robot sdk initialize failed." << std::endl;
     robot.Shutdown();
     return -1;
   }
 
-  // 设置rpc超时时间为10s
-  robot.SetTimeout(10000);
-
-  // 连接机器人
+  // Connect to robot
   auto status = robot.Connect();
   if (status.code != ErrorCode::OK) {
     std::cerr << "connect robot failed"
@@ -45,7 +42,7 @@ int main() {
 
   auto& controller = robot.GetSensorController();
 
-  // 打开lidar
+  // Open lidar
   status = controller.OpenLidar();
   if (status.code != ErrorCode::OK) {
     std::cerr << "open lidar failed"
@@ -55,7 +52,7 @@ int main() {
     return -1;
   }
 
-  // 订阅Lidar Imu数据
+  // Subscribe to Lidar IMU data
   controller.SubscribeLidarImu([](const std::shared_ptr<Imu> msg) {
     std::cout << "++++++++++ receive lidar imu." << std::endl;
 
@@ -66,7 +63,7 @@ int main() {
     std::cout << "lidar imu temperature: " << msg->temperature << std::endl;
   });
 
-  // 订阅Lidar PointCloud数据
+  // Subscribe to Lidar PointCloud data
   controller.SubscribeLidarPointCloud([](const std::shared_ptr<PointCloud2> msg) {
     std::cout << "++++++++++ receive lidar point cloud." << std::endl;
     // TODO: handle lidar point cloud data
@@ -86,7 +83,7 @@ int main() {
 
   usleep(20000000);
 
-  // 关闭lidar
+  // Close lidar
   status = controller.CloseLidar();
   if (status.code != ErrorCode::OK) {
     std::cerr << "close lidar failed"
@@ -96,7 +93,7 @@ int main() {
     return -1;
   }
 
-  // 断开与机器人的链接
+  // Disconnect from robot
   status = robot.Disconnect();
   if (status.code != ErrorCode::OK) {
     std::cerr << "disconnect robot failed"
