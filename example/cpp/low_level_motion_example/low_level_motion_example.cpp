@@ -1,4 +1,5 @@
 #include "magic_robot.h"
+#include "magic_sdk_version.h"
 
 #include <unistd.h>
 #include <csignal>
@@ -24,6 +25,8 @@ void signalHandler(int signum) {
 int main() {
   // Bind SIGINT (Ctrl+C)
   signal(SIGINT, signalHandler);
+
+  std::cout << "SDK Version: " << SDK_VERSION_STRING << std::endl;
 
   std::string local_ip = "192.168.54.111";
   // Configure local IP address for direct ethernet connection to robot and initialize SDK

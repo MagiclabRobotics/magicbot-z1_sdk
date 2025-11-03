@@ -1,4 +1,5 @@
 #include "magic_robot.h"
+#include "magic_sdk_version.h"
 
 #include <termios.h>
 #include <unistd.h>
@@ -18,21 +19,25 @@ void signalHandler(int signum) {
   exit(signum);
 }
 
-void print_help(const char* prog_name) {
+void print_help() {
   std::cout << "Key Function Demo Program\n\n";
-  std::cout << "Usage: " << prog_name << "\n";
-  std::cout << "Key Function Description:\n";
-  std::cout << "  ESC      Exit program\n";
-  std::cout << "  1        Function 1: Lock standing\n";
-  std::cout << "  2        Function 2: Balance standing\n";
+  std::cout << "High-Level Motion Control Function Description:\n";
+  std::cout << "  1        Function 1: Recovery stand\n";
+  std::cout << "  2        Function 2: Balance stand\n";
   std::cout << "  3        Function 3: Execute trick - greeting action\n";
-  std::cout << "  w        Function 4: Move forward\n";
-  std::cout << "  a        Function 5: Move left\n";
-  std::cout << "  s        Function 6: Move backward\n";
-  std::cout << "  d        Function 7: Move right\n";
-  std::cout << "  x        Function 8: Stop moving\n";
-  std::cout << "  t        Function 9: Turn left\n";
-  std::cout << "  g        Function 10: Turn right\n";
+  std::cout << "  w        Function w: Move forward\n";
+  std::cout << "  a        Function a: Move left\n";
+  std::cout << "  s        Function s: Move backward\n";
+  std::cout << "  d        Function d: Move right\n";
+  std::cout << "  x        Function x: Stop moving\n";
+  std::cout << "  t        Function t: Turn left\n";
+  std::cout << "  g        Function g: Turn right\n";
+  std::cout << "  u        Function u: Reset head move\n";
+  std::cout << "  j        Function j: Move head left\n";
+  std::cout << "  k        Function k: Move head right\n";
+  std::cout << "\n";
+  std::cout << "  ?        Function ?: Print help\n";
+  std::cout << "  ESC      Exit program\n";
 }
 
 int getch() {
@@ -106,11 +111,27 @@ void JoyStickCommand(float left_x_axis,
   controller.SendJoyStickCommand(joy_command);
 }
 
+void HeadMove(float shake_angle) {
+  // Get high-level motion controller
+  auto& controller = robot.GetHighLevelMotionController();
+  auto status = controller.HeadMove(shake_angle);
+  if (status.code != ErrorCode::OK) {
+    std::cerr << "head move failed"
+              << ", code: " << status.code
+              << ", message: " << status.message << std::endl;
+    return;
+  }
+  std::cout << "head move successfully." << std::endl;
+  std::cout << "shake_angle: " << shake_angle << std::endl;
+}
+
 int main(int argc, char* argv[]) {
   // Bind SIGINT (Ctrl+C)
   signal(SIGINT, signalHandler);
 
-  print_help(argv[0]);
+  std::cout << "SDK Version: " << SDK_VERSION_STRING << std::endl;
+
+  print_help();
 
   std::string local_ip = "192.168.54.111";
   // Configure local IP address for direct ethernet connection to robot and initialize SDK
@@ -163,32 +184,58 @@ int main(int argc, char* argv[]) {
         ExecuteTrick();
         break;
       }
+      case 'W':
       case 'w': {
         JoyStickCommand(0.0, 1.0, 0.0, 0.0);  // Move forward
         break;
       }
+      case 'A':
       case 'a': {
         JoyStickCommand(-1.0, 0.0, 0.0, 0.0);  // Move left
         break;
       }
+      case 'S':
       case 's': {
         JoyStickCommand(0.0, -1.0, 0.0, 0.0);  // Move backward
         break;
       }
+      case 'D':
       case 'd': {
         JoyStickCommand(1.0, 0.0, 0.0, 0.0);  // Move right
         break;
       }
+      case 'X':
       case 'x': {
         JoyStickCommand(0.0, 0.0, 0.0, 0.0);  // Stop
         break;
       }
+      case 'T':
       case 't': {
         JoyStickCommand(0.0, 0.0, -1.0, 1.0);  // Turn left
         break;
       }
+      case 'G':
       case 'g': {
         JoyStickCommand(0.0, 0.0, 1.0, 1.0);  // Turn right
+        break;
+      }
+      case 'U':
+      case 'u': {
+        HeadMove(0.0);
+        break;
+      }
+      case 'J':
+      case 'j': {
+        HeadMove(-0.5);
+        break;
+      }
+      case 'K':
+      case 'k': {
+        HeadMove(0.5);
+        break;
+      }
+      case '?': {
+        print_help();
         break;
       }
       default:

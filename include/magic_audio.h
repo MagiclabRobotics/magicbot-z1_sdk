@@ -22,10 +22,13 @@ using AudioControllerPtr = std::unique_ptr<AudioController>;
  */
 class MAGIC_EXPORT_API AudioController final : public NonCopyable {
   // Message pointer type definitions (smart pointers for memory management)
-  using AudioStreamPtr = std::shared_ptr<AudioStream>;  // Audio stream message pointer
+  using AudioStreamPtr = std::shared_ptr<AudioStream>;    // Audio stream message pointer
+  using WakeupStatusPtr = std::shared_ptr<WakeupStatus>;  // Wakeup status message pointer
+
   // Audio stream data callback function type definitions
   using OriginAudioStreamCallback = std::function<void(const AudioStreamPtr)>;  // Origin audio stream data callback
   using BfAudioStreamCallback = std::function<void(const AudioStreamPtr)>;      // BF audio stream data callback
+  using WakeupStatusCallback = std::function<void(const WakeupStatusPtr)>;      // Wake-up status callback
 
  public:
   /**
@@ -99,10 +102,43 @@ class MAGIC_EXPORT_API AudioController final : public NonCopyable {
   void SubscribeOriginAudioStream(const OriginAudioStreamCallback callback);
 
   /**
+   * @brief Unsubscribe from original audio stream data
+   */
+  void UnsubscribeOriginAudioStream();
+
+  /**
    * @brief Subscribe to BF audio stream data
    * @param callback Processing callback after receiving BF audio stream data
    */
   void SubscribeBfAudioStream(const BfAudioStreamCallback callback);
+
+  /**
+   * @brief Unsubscribe from BF audio stream data
+   */
+  void UnsubscribeBfAudioStream();
+
+  /**
+   * @brief Enable voice wake-up status stream
+   * @return Operation status, returns Status::OK on success.
+   */
+  Status OpenWakeupStatusStream();
+
+  /**
+   * @brief Disable voice wake-up status stream
+   * @return Operation status, returns Status::OK on success.
+   */
+  Status CloseWakeupStatusStream();
+
+  /**
+   * @brief Subscribe to voice wake-up status
+   * @param callback Processing callback after receiving wake-up status
+   */
+  void SubscribeWakeupStatus(const WakeupStatusCallback callback);
+
+  /**
+   * @brief Unsubscribe from voice wake-up status
+   */
+  void UnsubscribeWakeupStatus();
 
  private:
   std::atomic_bool is_shutdown_{true};  // Mark whether initialized

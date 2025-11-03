@@ -73,7 +73,14 @@ def main():
         monitor = robot.get_state_monitor()
 
         # Get current state
-        state = monitor.get_current_state()
+        [status, state] = monitor.get_current_state()
+        if status.code != magicbot.ErrorCode.OK:
+            logging.error(
+                "Failed to get current state, code: %s, message: %s",
+                status.code,
+                status.message,
+            )
+            return -1
 
         # Print battery information
         logging.info("Battery health: %s", state.bms_data.battery_health)

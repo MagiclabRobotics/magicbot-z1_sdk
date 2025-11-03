@@ -1,4 +1,5 @@
 #include "magic_robot.h"
+#include "magic_sdk_version.h"
 
 #include <termios.h>
 #include <unistd.h>
@@ -159,6 +160,8 @@ void SubscribeAudioStream() {
 int main(int argc, char* argv[]) {
   // Bind SIGINT (Ctrl+C)
   signal(SIGINT, signalHandler);
+
+  std::cout << "SDK Version: " << SDK_VERSION_STRING << std::endl;
 
   print_help(argv[0]);
 

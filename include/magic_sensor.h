@@ -104,10 +104,20 @@ class MAGIC_EXPORT_API SensorController final : public NonCopyable {
   void SubscribeLidarImu(const LidarImuCallback callback);
 
   /**
+   * @brief Unsubscribe from lidar IMU data
+   */
+  void UnsubscribeLidarImu();
+
+  /**
    * @brief Subscribe to lidar point cloud data
    * @param callback Processing callback after receiving point cloud data
    */
   void SubscribeLidarPointCloud(const LidarPointCloudCallback callback);
+
+  /**
+   * @brief Unsubscribe from lidar point cloud data
+   */
+  void UnsubscribeLidarPointCloud();
 
   /**
    * @brief Subscribe to head RGBD color image data
@@ -116,10 +126,20 @@ class MAGIC_EXPORT_API SensorController final : public NonCopyable {
   void SubscribeHeadRgbdColorImage(const RgbdImageCallback callback);
 
   /**
+   * @brief Unsubscribe from head RGBD color image data
+   */
+  void UnsubscribeHeadRgbdColorImage();
+
+  /**
    * @brief Subscribe to head RGBD depth image data
    * @param callback Processing callback after receiving depth image data
    */
   void SubscribeHeadRgbdDepthImage(const RgbdImageCallback callback);
+
+  /**
+   * @brief Unsubscribe from head RGBD depth image data
+   */
+  void UnsubscribeHeadRgbdDepthImage();
 
   /**
    * @brief Subscribe to head RGBD camera parameter data
@@ -128,16 +148,31 @@ class MAGIC_EXPORT_API SensorController final : public NonCopyable {
   void SubscribeHeadRgbdCameraInfo(const CameraInfoCallback callback);
 
   /**
+   * @brief Unsubscribe from head RGBD camera parameter data
+   */
+  void UnsubscribeHeadRgbdCameraInfo();
+
+  /**
    * @brief Subscribe to binocular camera image frame data
    * @param callback Processing callback after receiving binocular camera data
    */
   void SubscribeBinocularImage(const BinocularImageCallback callback);
 
   /**
+   * @brief Unsubscribe from binocular camera image frame data
+   */
+  void UnsubscribeBinocularImage();
+
+  /**
    * @brief Subscribe to binocular camera parameter data
    * @param callback Processing callback after receiving camera intrinsic parameter information
    */
   void SubscribeBinocularCameraInfo(const CameraInfoCallback callback);
+
+  /**
+   * @brief Unsubscribe from binocular camera parameter data
+   */
+  void UnsubscribeBinocularCameraInfo();
 
  private:
   std::atomic_bool is_shutdown_{true};  // Mark whether initialized

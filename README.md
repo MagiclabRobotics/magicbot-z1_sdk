@@ -31,11 +31,17 @@ net.core.wmem_default=20971520
 - CMake ≥ 3.16
 - Make build system
 - Eigen3
+- python3.10
 
 ### 3. Programming Language
 
 - C++20 (minimum)
 - python3.10
+
+### 4. Dependencies
+
+- libzmq3-dev
+- libsystemd-dev
 
 ## Build examples
 To build the examples inside this reposity:
@@ -46,29 +52,13 @@ To build the examples inside this reposity:
   make -j8
 ```
 
-## Doc
-Installing Sphinx dependencies:
-```
-  pip install sphinx
-  pip install myst-parser
-  pip install linkify-it-py
-  pip install sphinx_rtd_theme
-```
-Build Sphinx documentation：
-```
-  cd doc/
-  make html
-```
-Enter doc/build/html directory, and open `index.html`
-
-
-### C++ SDK Installation
+## C++ SDK Installation
 
 To build your own application with this SDK, you can install the magicbot_z1_sdk to specified directory:
 ```
   mkdir build
   cd build
-  cmake .. -DCMAKE_INSTALL_PREFIX=/opt/magic_robotics/magic_z1_sdk
+  cmake .. -DCMAKE_INSTALL_PREFIX=/opt/magic_robotics/magicbot_z1_sdk
   sudo make install
 ```
 You can refer to example/cmake_sample on how to import the `magicbot_z1_sdk` into your CMake project.
@@ -76,7 +66,7 @@ You can refer to example/cmake_sample on how to import the `magicbot_z1_sdk` int
   cd example/cmake_example
   mkdir build
   cd build
-  cmake .. -DCMAKE_PREFIX_PATH=/opt/magic_robotics/magic_z1_sdk
+  cmake .. -DCMAKE_PREFIX_PATH=/opt/magic_robotics/magicbot_z1_sdk
   make -j8
 ```
 Note that the path specified by -DCMAKE_PREFIX_PATH must be the same as the installation directory used above.
@@ -87,8 +77,8 @@ The Python bindings are automatically installed when you build the SDK. After bu
 
 ```bash
 # Set up environment variables for Python SDK
-export PYTHONPATH=/opt/magic_robotics/magic_z1_sdk/lib:$PYTHONPATH
-export LD_LIBRARY_PATH=/opt/magic_robotics/magic_z1_sdk/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=/opt/magic_robotics/magicbot_z1_sdk/lib:$PYTHONPATH
+export LD_LIBRARY_PATH=/opt/magic_robotics/magicbot_z1_sdk/lib:$LD_LIBRARY_PATH
 ```
 
 You can also add these environment variables to your shell profile (e.g., `~/.bashrc`) for permanent setup.
@@ -100,5 +90,6 @@ You can also add these environment variables to your shell profile (e.g., `~/.ba
 - Make sure to set the correct environment variables (`PYTHONPATH` and `LD_LIBRARY_PATH`) when using the Python SDK
 - The Python bindings are automatically generated during the build process
 
-For more reference information, please go to [MagicRobotics](https://github.com/MagiclabRobotics)
+> For more reference documentation, please go to [MagicLab Document Center](https://support.magiclab.top/)
 
+> For more reference information, please go to [MagicRobotics](https://github.com/MagiclabRobotics)

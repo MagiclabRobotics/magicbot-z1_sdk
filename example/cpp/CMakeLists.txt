@@ -1,8 +1,6 @@
-
 add_subdirectory(monitor_example)
 add_subdirectory(low_level_motion_example)
 add_subdirectory(high_level_motion_example)
 add_subdirectory(audio_example)
 add_subdirectory(sensor_example)
-
-
+add_subdirectory(slam_navigation_example)

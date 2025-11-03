@@ -4,6 +4,8 @@ import sys
 import time
 import signal
 import logging
+import termios
+import tty
 from typing import Optional
 
 import magicbot_z1_python as magicbot
@@ -37,38 +39,32 @@ def print_help():
     """Print help information"""
     logging.info("High-Level Motion Control Function Demo Program")
     logging.info("")
-    logging.info("Key Function Description:")
-    logging.info("  ESC      Exit program")
+    logging.info("High-Level Motion Control Functions:")
     logging.info("  1        Function 1: Recovery stand")
     logging.info("  2        Function 2: Balance stand")
     logging.info("  3        Function 3: Execute trick - welcome action")
-    logging.info("  w        Function 4: Move forward")
-    logging.info("  a        Function 5: Move left")
-    logging.info("  s        Function 6: Move backward")
-    logging.info("  d        Function 7: Move right")
-    logging.info("  x        Function 8: stop move")
-    logging.info("  t        Function 9: Turn left")
-    logging.info("  g        Function 10: Turn right")
+    logging.info("  w        Function w: Move forward")
+    logging.info("  a        Function a: Move left")
+    logging.info("  s        Function s: Move backward")
+    logging.info("  d        Function d: Move right")
+    logging.info("  x        Function x: stop move")
+    logging.info("  t        Function t: Turn left")
+    logging.info("  g        Function g: Turn right")
+    logging.info("  u        Function u: Reset head move")
+    logging.info("  j        Function j: Move head left")
+    logging.info("  k        Function k: Move head right")
+    logging.info("")
+    logging.info("  ?        Function ?: Print help")
+    logging.info("  ESC      Exit program")
 
 
 def get_user_input():
-    """Get user input"""
+    """Get user input - 读取一行数据"""
     try:
-        # Python implementation of getch() on Linux systems
-        import tty
-        import termios
-
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
-    except ImportError:
-        # If termios is not available, use simple input
-        return input("Please press a key: ").strip()
+        # 方法1: 使用 input() 读取一行（推荐）
+        return input("Enter command: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        return ""
 
 
 def recovery_stand():
@@ -125,17 +121,46 @@ def balance_stand():
         return False
 
 
-def execute_trick_welcome():
+def get_action(cmd):
+    if cmd == "215":
+        return magicbot.TrickAction.ACTION_SHAKE_LEFT_HAND_REACHOUT
+    elif cmd == "216":
+        return magicbot.TrickAction.ACTION_SHAKE_LEFT_HAND_WITHDRAW
+    elif cmd == "217":
+        return magicbot.TrickAction.ACTION_SHAKE_RIGHT_HAND_REACHOUT
+    elif cmd == "218":
+        return magicbot.TrickAction.ACTION_SHAKE_RIGHT_HAND_WITHDRAW
+    elif cmd == "220":
+        return magicbot.TrickAction.ACTION_SHAKE_HEAD
+    elif cmd == "300":
+        return magicbot.TrickAction.ACTION_LEFT_GREETING
+    elif cmd == "301":
+        return magicbot.TrickAction.ACTION_RIGHT_GREETING
+    elif cmd == "304":
+        return magicbot.TrickAction.ACTION_TRUN_LEFT_INTRODUCE_HIGH
+    elif cmd == "305":
+        return magicbot.TrickAction.ACTION_TRUN_LEFT_INTRODUCE_LOW
+    elif cmd == "306":
+        return magicbot.TrickAction.ACTION_TRUN_RIGHT_INTRODUCE_HIGH
+    elif cmd == "307":
+        return magicbot.TrickAction.ACTION_TRUN_RIGHT_INTRODUCE_LOW
+    elif cmd == "340":
+        return magicbot.TrickAction.ACTION_WELCOME
+    else:
+        return magicbot.TrickAction.ACTION_NONE
+
+
+def execute_trick_action(cmd):
     """Execute trick - welcome action"""
     global robot
     try:
-        logging.info("=== Executing Trick - Celebrate Action ===")
+        logging.info("=== Executing Trick - %s Action ===", cmd)
 
         # Get high-level motion controller
         controller = robot.get_high_level_motion_controller()
 
         # Execute welcome trick
-        status = controller.execute_trick(magicbot.TrickAction.ACTION_WELCOME, 10000)
+        status = controller.execute_trick(get_action(cmd), 10000)
         if status.code != magicbot.ErrorCode.OK:
             logging.error(
                 "Failed to execute robot trick, code: %s, message: %s",
@@ -150,6 +175,17 @@ def execute_trick_welcome():
     except Exception as e:
         logging.error("Exception occurred while executing trick: %s", e)
         return False
+
+
+def head_move(angle):
+    """Move head"""
+    global robot
+    try:
+        # Get high-level motion controller
+        controller = robot.get_high_level_motion_controller()
+        controller.head_move(angle)
+    except Exception as e:
+        logging.error("Exception occurred while moving head: %s", e)
 
 
 def joystick_command(left_x_axis, left_y_axis, right_x_axis, right_y_axis):
@@ -214,6 +250,40 @@ def stop_move():
     return joystick_command(0.0, 0.0, 0.0, 0.0)
 
 
+def head_move_reset():
+    """Reset head move"""
+    logging.info("=== Resetting Head Move ===")
+    return head_move(0.0)
+
+
+def head_move_left():
+    """Move head left"""
+    logging.info("=== Moving Head Left ===")
+    return head_move(-0.5)
+
+
+def head_move_right():
+    """Move head right"""
+    logging.info("=== Moving Head Right ===")
+    return head_move(0.5)
+
+
+# Get single character input (no echo)
+def getch():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+        logging.info(f"Received character: {ch}")
+
+        sys.stdout.write("\r")
+        sys.stdout.flush()
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
+
+
 def main():
     """Main function"""
     global robot, running
@@ -276,33 +346,44 @@ def main():
         # Main loop
         while running:
             try:
-                key = get_user_input()
-
+                key = getch()
                 if key == "\x1b":  # ESC key
                     break
-
-                logging.info("Key pressed: %s", key)
 
                 if key == "1":
                     recovery_stand()
                 elif key == "2":
                     balance_stand()
                 elif key == "3":
-                    execute_trick_welcome()
-                elif key == "w":
+                    str_input = get_user_input()
+                    # Split input parameters by space
+                    parts = str_input.strip().split()
+                    # Parse parameters
+                    cmd = parts[0] if parts else "340"
+                    print("cmd: ", cmd)
+                    execute_trick_action(cmd)
+                elif key.upper() == "W":
                     move_forward()
-                elif key == "a":
+                elif key.upper() == "A":
                     move_left()
-                elif key == "s":
+                elif key.upper() == "S":
                     move_backward()
-                elif key == "d":
+                elif key.upper() == "D":
                     move_right()
-                elif key == "x":
+                elif key.upper() == "X":
                     stop_move()
-                elif key == "t":
+                elif key.upper() == "T":
                     turn_left()
-                elif key == "g":
+                elif key.upper() == "G":
                     turn_right()
+                elif key.upper() == "U":
+                    head_move_reset()
+                elif key.upper() == "J":
+                    head_move_left()
+                elif key.upper() == "K":
+                    head_move_right()
+                elif key.upper() == "?":
+                    print_help()
                 else:
                     logging.info("Unknown key: %s", key)
 
