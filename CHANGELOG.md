@@ -5,6 +5,14 @@ All significant changes will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and adheres to [Semantic Versioning](https://semver.org/).
 
+## [v1.2.1] - 2025-11-21
+
+**Corresponding Core Firmware Version: >= MagicBot-Z1 20251118**
+
+### Changed
+- Lidar point-cloud and camera image data are transmitted via ZMQ.
+- Camera intrinsic parameters are transmitted via LCM, with the port number updated.
+
 ## [v1.2.0] - 2025-11-03
 
 **Corresponding Core Firmware Version: >= MagicBot-Z1 20251101**
