@@ -25,6 +25,7 @@ std::atomic<int> head_rgbd_color_counter(0);
 std::atomic<int> head_rgbd_depth_counter(0);
 std::atomic<int> head_rgbd_camera_info_counter(0);
 std::atomic<int> binocular_image_counter(0);
+std::atomic<int> binocular_camera_info_counter(0);
 
 void signalHandler(int signum) {
   std::cout << "\nInterrupt signal (" << signum << ") received.\n";
@@ -53,6 +54,7 @@ class SensorManager {
     subscriptions_["head_rgbd_depth_image"] = false;
     subscriptions_["head_rgbd_camera_info"] = false;
     subscriptions_["binocular_image"] = false;
+    subscriptions_["binocular_camera_info"] = false;
   }
 
   // === LiDAR Control ===
@@ -174,7 +176,7 @@ class SensorManager {
           std::cout << "Counter: " << count << std::endl;
           std::cout << "Timestamp: " << imu->timestamp << std::endl;
           std::cout << std::fixed << std::setprecision(4);
-          std::cout << "Orientation (x,y,z,w): ["
+          std::cout << "Orientation (w,x,y,z): ["
                     << imu->orientation[0] << ", "
                     << imu->orientation[1] << ", "
                     << imu->orientation[2] << ", "
@@ -316,6 +318,27 @@ class SensorManager {
     }
   }
 
+  void ToggleBinocularCameraInfoSubscription() {
+    if (subscriptions_["binocular_camera_info"]) {
+      sensor_controller_.UnsubscribeBinocularCameraInfo();
+      subscriptions_["binocular_camera_info"] = false;
+      std::cout << "[INFO] ✗ Binocular camera info unsubscribed" << std::endl;
+    } else {
+      sensor_controller_.SubscribeBinocularCameraInfo([](const std::shared_ptr<CameraInfo>& info) {
+        int count = ++binocular_camera_info_counter;
+        if (count % 2 == 0) {
+          std::cout << "========== Binocular Camera Info ==========" << std::endl;
+          std::cout << "Counter: " << count << std::endl;
+          std::cout << "Resolution: " << info->width << "x" << info->height << std::endl;
+          std::cout << "Distortion model: " << info->distortion_model << std::endl;
+          std::cout << "========================================" << std::endl;
+        }
+      });
+      subscriptions_["binocular_camera_info"] = true;
+      std::cout << "[INFO] ✓ Binocular camera info subscribed" << std::endl;
+    }
+  }
+
   void ShowStatus() const {
     std::cout << "\n"
               << std::string(80, '=') << std::endl;
@@ -345,6 +368,8 @@ class SensorManager {
     std::cout << "\nBINOCULAR CAMERA SUBSCRIPTIONS:" << std::endl;
     std::cout << "  Binocular Image:             "
               << (subscriptions_.at("binocular_image") ? "✓ SUBSCRIBED" : "✗ UNSUBSCRIBED") << std::endl;
+    std::cout << "  Camera Info:                 "
+              << (subscriptions_.at("binocular_camera_info") ? "✓ SUBSCRIBED" : "✗ UNSUBSCRIBED") << std::endl;
     std::cout << std::string(80, '=') << "\n"
               << std::endl;
   }
@@ -376,7 +401,7 @@ void PrintMenu() {
   std::cout << "  c - Toggle Head Color Image        d - Toggle Head Depth Image" << std::endl;
   std::cout << "  C - Toggle Head Camera Info" << std::endl;
   std::cout << "\nBinocular Camera Subscriptions:" << std::endl;
-  std::cout << "  b - Toggle Binocular Image" << std::endl;
+  std::cout << "  b - Toggle Binocular Image         B - Toggle Binocular Camera Info" << std::endl;
   std::cout << "\nCommands:" << std::endl;
   std::cout << "  s - Show Status                    q - Quit              ? - Help" << std::endl;
   std::cout << std::string(80, '=') << std::endl;
@@ -499,6 +524,9 @@ int main() {
       // Binocular camera subscriptions
       case 'b':
         sensor_manager.ToggleBinocularImageSubscription();
+        break;
+      case 'B':
+        sensor_manager.ToggleBinocularCameraInfoSubscription();
         break;
 
       // Commands

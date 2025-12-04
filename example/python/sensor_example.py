@@ -28,6 +28,7 @@ head_rgbd_color_counter = 0
 head_rgbd_depth_counter = 0
 head_rgbd_camera_info_counter = 0
 binocular_image_counter = 0
+binocular_camera_info_counter = 0
 
 
 def signal_handler(signum, frame):
@@ -63,6 +64,7 @@ class SensorManager:
             "head_rgbd_camera_info": False,
             # Binocular camera subscriptions
             "binocular_image": False,
+            "binocular_camera_info": False,
         }
 
     # === LiDAR Control ===
@@ -175,7 +177,7 @@ class SensorManager:
                     logging.info("Counter: %d", lidar_imu_counter)
                     logging.info("Timestamp: %d", imu.timestamp)
                     logging.info(
-                        "Orientation (x,y,z,w): [%.4f, %.4f, %.4f, %.4f]",
+                        "Orientation (w,x,y,z): [%.4f, %.4f, %.4f, %.4f]",
                         imu.orientation[0],
                         imu.orientation[1],
                         imu.orientation[2],
@@ -293,12 +295,11 @@ class SensorManager:
             def head_rgbd_camera_info_callback(info):
                 global head_rgbd_camera_info_counter
                 head_rgbd_camera_info_counter += 1
-                if head_rgbd_camera_info_counter % 30 == 0:
-                    logging.info("========== Head RGBD Camera Info ==========")
-                    logging.info("Counter: %d", head_rgbd_camera_info_counter)
-                    logging.info("Resolution: %dx%d", info.width, info.height)
-                    logging.info("Distortion model: %s", info.distortion_model)
-                    logging.info("=" * 40)
+                logging.info("========== Head RGBD Camera Info ==========")
+                logging.info("Counter: %d", head_rgbd_camera_info_counter)
+                logging.info("Resolution: %dx%d", info.width, info.height)
+                logging.info("Distortion model: %s", info.distortion_model)
+                logging.info("=" * 40)
 
             self.sensor_controller.subscribe_head_rgbd_camera_info(
                 head_rgbd_camera_info_callback
@@ -333,6 +334,29 @@ class SensorManager:
             self.sensor_controller.subscribe_binocular_image(binocular_image_callback)
             self.subscriptions["binocular_image"] = True
             logging.info("✓ Binocular image subscribed")
+
+    def toggle_binocular_camera_info_subscription(self):
+        """Toggle binocular camera info subscription"""
+        if self.subscriptions["binocular_camera_info"]:
+            self.sensor_controller.unsubscribe_binocular_camera_info()
+            self.subscriptions["binocular_camera_info"] = False
+            logging.info("✗ Binocular camera info unsubscribed")
+        else:
+
+            def binocular_camera_info_callback(info):
+                global binocular_camera_info_counter
+                binocular_camera_info_counter += 1
+                logging.info("========== Binocular Camera Info ==========")
+                logging.info("Counter: %d", binocular_camera_info_counter)
+                logging.info("Resolution: %dx%d", info.width, info.height)
+                logging.info("Distortion model: %s", info.distortion_model)
+                logging.info("=" * 40)
+
+            self.sensor_controller.subscribe_binocular_camera_info(
+                binocular_camera_info_callback
+            )
+            self.subscriptions["binocular_camera_info"] = True
+            logging.info("✓ Binocular camera info subscribed")
 
     def show_status(self):
         """Display current sensor status"""
@@ -398,6 +422,14 @@ class SensorManager:
                 else "✗ UNSUBSCRIBED"
             ),
         )
+        logging.info(
+            "  Camera Info:                 %s",
+            (
+                "✓ SUBSCRIBED"
+                if self.subscriptions["binocular_camera_info"]
+                else "✗ UNSUBSCRIBED"
+            ),
+        )
         logging.info("=" * 80 + "\n")
 
 
@@ -416,7 +448,9 @@ def print_menu():
     logging.info("  c - Toggle Head Color Image        d - Toggle Head Depth Image")
     logging.info("  C - Toggle Head Camera Info")
     logging.info("\nBinocular Camera Subscriptions:")
-    logging.info("  b - Toggle Binocular Image")
+    logging.info(
+        "  b - Toggle Binocular Image         B - Toggle Binocular Camera Info"
+    )
     logging.info("\nCommands:")
     logging.info(
         "  s - Show Status                    ESC - Quit              ? - Help"
@@ -518,6 +552,8 @@ def main():
                 # Binocular camera subscriptions
                 elif choice == "b":
                     sensor_manager.toggle_binocular_image_subscription()
+                elif choice == "B":
+                    sensor_manager.toggle_binocular_camera_info_subscription()
                 # Commands
                 elif choice.lower() == "s":
                     sensor_manager.show_status()

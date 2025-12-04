@@ -47,16 +47,20 @@ def body_imu_callback(imu_data):
         logging.info("+++++++++++++ Received body IMU data")
         # Print IMU data
         logging.info("Received body IMU data, timestamp: %d", imu_data.timestamp)
-        logging.info("Received body IMU data, orientation: %s", imu_data.orientation)
+        logging.info("Received body IMU data, orientation: [%f,%f,%f,%f]", imu_data.orientation[0], imu_data.orientation[1], imu_data.orientation[2], imu_data.orientation[3])
         logging.info(
-            "Received body IMU data, angular_velocity: %s",
-            imu_data.angular_velocity,
+            "Received body IMU data, angular_velocity: [%f,%f,%f]",
+            imu_data.angular_velocity[0],
+            imu_data.angular_velocity[1],
+            imu_data.angular_velocity[2],
         )
         logging.info(
-            "Received body IMU data, linear_acceleration: %s",
-            imu_data.linear_acceleration,
+            "Received body IMU data, linear_acceleration: [%f,%f,%f]",
+            imu_data.linear_acceleration[0],
+            imu_data.linear_acceleration[1],
+            imu_data.linear_acceleration[2],
         )
-        logging.info("Received body IMU data, temperature: %s", imu_data.temperature)
+        logging.info("Received body IMU data, temperature: %f", imu_data.temperature)
     body_imu_counter += 1
 
 
@@ -71,22 +75,22 @@ def arm_state_callback(joint_state):
             joint_state.joints[0].status_word,
         )
         logging.info(
-            "Received arm joint state data, posH: %s", joint_state.joints[0].posH
+            "Received arm joint state data, posH: %f", joint_state.joints[0].posH
         )
         logging.info(
-            "Received arm joint state data, posL: %s", joint_state.joints[0].posL
+            "Received arm joint state data, posL: %f", joint_state.joints[0].posL
         )
         logging.info(
-            "Received arm joint state data, vel: %s", joint_state.joints[0].vel
+            "Received arm joint state data, vel: %f", joint_state.joints[0].vel
         )
         logging.info(
-            "Received arm joint state data, toq: %s", joint_state.joints[0].toq
+            "Received arm joint state data, toq: %f", joint_state.joints[0].toq
         )
         logging.info(
-            "Received arm joint state data, current: %s", joint_state.joints[0].current
+            "Received arm joint state data, current: %f", joint_state.joints[0].current
         )
         logging.info(
-            "Received arm joint state data, error_code: %s",
+            "Received arm joint state data, error_code: %d",
             joint_state.joints[0].err_code,
         )
     arm_state_counter += 1
@@ -103,22 +107,22 @@ def leg_state_callback(joint_state):
             joint_state.joints[0].status_word,
         )
         logging.info(
-            "Received leg joint state data, posH: %s", joint_state.joints[0].posH
+            "Received leg joint state data, posH: %f", joint_state.joints[0].posH
         )
         logging.info(
-            "Received leg joint state data, posL: %s", joint_state.joints[0].posL
+            "Received leg joint state data, posL: %f", joint_state.joints[0].posL
         )
         logging.info(
-            "Received leg joint state data, vel: %s", joint_state.joints[0].vel
+            "Received leg joint state data, vel: %f", joint_state.joints[0].vel
         )
         logging.info(
-            "Received leg joint state data, toq: %s", joint_state.joints[0].toq
+            "Received leg joint state data, toq: %f", joint_state.joints[0].toq
         )
         logging.info(
-            "Received leg joint state data, current: %s", joint_state.joints[0].current
+            "Received leg joint state data, current: %f", joint_state.joints[0].current
         )
         logging.info(
-            "Received leg joint state data, error_code: %s",
+            "Received leg joint state data, error_code: %d",
             joint_state.joints[0].err_code,
         )
     leg_state_counter += 1
@@ -135,22 +139,22 @@ def head_state_callback(joint_state):
             joint_state.joints[0].status_word,
         )
         logging.info(
-            "Received head joint state data, posH: %s", joint_state.joints[0].posH
+            "Received head joint state data, posH: %f", joint_state.joints[0].posH
         )
         logging.info(
-            "Received head joint state data, posL: %s", joint_state.joints[0].posL
+            "Received head joint state data, posL: %f", joint_state.joints[0].posL
         )
         logging.info(
-            "Received head joint state data, vel: %s", joint_state.joints[0].vel
+            "Received head joint state data, vel: %f", joint_state.joints[0].vel
         )
         logging.info(
-            "Received head joint state data, toq: %s", joint_state.joints[0].toq
+            "Received head joint state data, toq: %f", joint_state.joints[0].toq
         )
         logging.info(
-            "Received head joint state data, current: %s", joint_state.joints[0].current
+            "Received head joint state data, current: %f", joint_state.joints[0].current
         )
         logging.info(
-            "Received head joint state data, error_code: %s",
+            "Received head joint state data, error_code: %d",
             joint_state.joints[0].err_code,
         )
     head_state_counter += 1
@@ -167,23 +171,23 @@ def waist_state_callback(joint_state):
             joint_state.joints[0].status_word,
         )
         logging.info(
-            "Received waist joint state data, posH: %s", joint_state.joints[0].posH
+            "Received waist joint state data, posH: %f", joint_state.joints[0].posH
         )
         logging.info(
-            "Received waist joint state data, posL: %s", joint_state.joints[0].posL
+            "Received waist joint state data, posL: %f", joint_state.joints[0].posL
         )
         logging.info(
-            "Received waist joint state data, vel: %s", joint_state.joints[0].vel
+            "Received waist joint state data, vel: %f", joint_state.joints[0].vel
         )
         logging.info(
-            "Received waist joint state data, toq: %s", joint_state.joints[0].toq
+            "Received waist joint state data, toq: %f", joint_state.joints[0].toq
         )
         logging.info(
-            "Received waist joint state data, current: %s",
+            "Received waist joint state data, current: %f",
             joint_state.joints[0].current,
         )
         logging.info(
-            "Received waist joint state data, error_code: %s",
+            "Received waist joint state data, error_code: %d",
             joint_state.joints[0].err_code,
         )
     waist_state_counter += 1
@@ -259,6 +263,9 @@ def main():
         logging.info("Subscribed to waist joint state")
 
         # Main loop
+        interval = 0.002  # 2ms
+        next_t = time.perf_counter() + interval
+
         global running
         while running:
             # Create arm joint control command
@@ -320,7 +327,10 @@ def main():
             # Publish head joint control command
             controller.publish_head_command(head_command)
 
-            time.sleep(0.002)
+            next_t += interval
+            sleep_time = next_t - time.perf_counter()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
     except Exception as e:
         logging.error("Exception occurred during program execution: %s", e)
