@@ -122,17 +122,19 @@ class MAGIC_EXPORT_API HighLevelMotionController final : public MotionController
  */
 class MAGIC_EXPORT_API LowLevelMotionController final : public MotionControllerBase {
   // Message pointer type definitions (smart pointers for memory management)
-  using JointStatePtr = std::shared_ptr<JointState>;  // Joint state message pointer
-  using HandStatePtr = std::shared_ptr<HandState>;    // Hand state message pointer
-  using ImuPtr = std::shared_ptr<Imu>;                // IMU inertial measurement unit message pointer
+  using JointStatePtr = std::shared_ptr<JointState>;          // Joint state message pointer
+  using HandStatePtr = std::shared_ptr<HandState>;            // Hand state message pointer
+  using ImuPtr = std::shared_ptr<Imu>;                        // IMU inertial measurement unit message pointer
+  using EstimatorStatePtr = std::shared_ptr<EstimatorState>;  // Estimator state message pointer
 
   // Callback function type definitions for various joint data
-  using ArmJointStateCallback = std::function<void(const JointStatePtr)>;    // Arm joint state callback function type
-  using LegJointStateCallback = std::function<void(const JointStatePtr)>;    // Leg joint state callback function type
-  using HeadJointStateCallback = std::function<void(const JointStatePtr)>;   // Head joint state callback function type
-  using WaistJointStateCallback = std::function<void(const JointStatePtr)>;  // Waist joint state callback function type
-  using HandStateCallback = std::function<void(const HandStatePtr)>;         // Hand state callback function type
-  using BodyImuCallback = std::function<void(const ImuPtr)>;                 // Body IMU data callback
+  using ArmJointStateCallback = std::function<void(const JointStatePtr)>;       // Arm joint state callback function type
+  using LegJointStateCallback = std::function<void(const JointStatePtr)>;       // Leg joint state callback function type
+  using HeadJointStateCallback = std::function<void(const JointStatePtr)>;      // Head joint state callback function type
+  using WaistJointStateCallback = std::function<void(const JointStatePtr)>;     // Waist joint state callback function type
+  using HandStateCallback = std::function<void(const HandStatePtr)>;            // Hand state callback function type
+  using BodyImuCallback = std::function<void(const ImuPtr)>;                    // Body IMU data callback
+  using EstimatorStateCallback = std::function<void(const EstimatorStatePtr)>;  // Estimator state data callback
 
  public:
   /// Constructor, initializes low-level controller.
@@ -262,6 +264,17 @@ class MAGIC_EXPORT_API LowLevelMotionController final : public MotionControllerB
    * @brief Unsubscribe from body IMU data
    */
   void UnsubscribeBodyImu();
+
+  /**
+   * @brief Subscribe to estimator state data
+   * @param callback Callback function for processing received estimator state data
+   */
+  void SubscribeEstimatorState(const EstimatorStateCallback callback);
+
+  /**
+   * @brief Unsubscribe from estimator state data
+   */
+  void UnsubscribeEstimatorState();
 };
 
 }  // namespace magic::z1::motion

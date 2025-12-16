@@ -291,6 +291,22 @@ struct JointState {
   std::vector<SingleJointState> joints;  ///< State data for all joints
 };
 
+/**
+ * @brief Estimator state data structure
+ */
+struct EstimatorState {
+  // Body position in world coordinates
+  std::array<double, 3> w_base_pos;
+  // Center of mass position in world coordinates
+  std::array<double, 3> w_com_pos;
+  // Center of mass linear velocity in world coordinates
+  std::array<double, 3> w_com_vel;
+  // Body linear velocity in world coordinates
+  std::array<double, 3> w_base_vel;
+  // Body linear velocity in body coordinates
+  std::array<double, 3> b_base_vel;
+};
+
 /************************************************************
  *                        Voice Control                       *
  ************************************************************/
