@@ -24,6 +24,7 @@ arm_state_counter = 0
 leg_state_counter = 0
 head_state_counter = 0
 waist_state_counter = 0
+estimator_state_counter = 0
 
 
 def signal_handler(signum, frame):
@@ -192,6 +193,18 @@ def waist_state_callback(joint_state):
         )
     waist_state_counter += 1
 
+def estimator_state_callback(estimator_state):
+    """Estimator state callback function"""
+    global estimator_state_counter
+    if estimator_state_counter % 1000 == 0:
+        logging.info("+++++++++++++ Received estimator state data")
+        # Print estimator state data
+        logging.info("Received estimator state data, w_base_pos: [%f,%f,%f]", estimator_state.w_base_pos[0], estimator_state.w_base_pos[1], estimator_state.w_base_pos[2])
+        logging.info("Received estimator state data, w_com_pos: [%f,%f,%f]", estimator_state.w_com_pos[0], estimator_state.w_com_pos[1], estimator_state.w_com_pos[2])
+        logging.info("Received estimator state data, w_com_vel: [%f,%f,%f]", estimator_state.w_com_vel[0], estimator_state.w_com_vel[1], estimator_state.w_com_vel[2])
+        logging.info("Received estimator state data, w_base_vel: [%f,%f,%f]", estimator_state.w_base_vel[0], estimator_state.w_base_vel[1], estimator_state.w_base_vel[2])
+        logging.info("Received estimator state data, b_base_vel: [%f,%f,%f]", estimator_state.b_base_vel[0], estimator_state.b_base_vel[1], estimator_state.b_base_vel[2])
+    estimator_state_counter += 1
 
 def main():
     """Main function"""
@@ -261,6 +274,10 @@ def main():
         # Subscribe to waist joint state
         controller.subscribe_waist_state(waist_state_callback)
         logging.info("Subscribed to waist joint state")
+
+        # Subscribe to estimator state
+        controller.subscribe_estimator_state(estimator_state_callback)
+        logging.info("Subscribed to estimator state")
 
         # Main loop
         interval = 0.002  # 2ms

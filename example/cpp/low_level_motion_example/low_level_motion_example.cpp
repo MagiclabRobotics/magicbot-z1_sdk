@@ -90,6 +90,20 @@ int main() {
     // TODO: handle arm joint data
   });
 
+  // Subscribe to estimator state
+  controller.SubscribeEstimatorState([](const std::shared_ptr<EstimatorState> msg) {
+    static int32_t count = 0;
+    if (count++ % 1000 == 1) {
+      std::cout << "+++++++++++ receive estimator state data." << std::endl;
+      std::cout << "w_base_pos: " << msg->w_base_pos[0] << ", " << msg->w_base_pos[1] << ", " << msg->w_base_pos[2] << std::endl;
+      std::cout << "w_com_pos: " << msg->w_com_pos[0] << ", " << msg->w_com_pos[1] << ", " << msg->w_com_pos[2] << std::endl;
+      std::cout << "w_com_vel: " << msg->w_com_vel[0] << ", " << msg->w_com_vel[1] << ", " << msg->w_com_vel[2] << std::endl;
+      std::cout << "w_base_vel: " << msg->w_base_vel[0] << ", " << msg->w_base_vel[1] << ", " << msg->w_base_vel[2] << std::endl;
+      std::cout << "b_base_vel: " << msg->b_base_vel[0] << ", " << msg->b_base_vel[1] << ", " << msg->b_base_vel[2] << std::endl;
+    }
+    // TODO: handle estimator state data
+  });
+
   // Using arm joint control as an example:
   // Subsequent joint control commands, joint operation mode is 1, indicating joint is in position control mode
   auto now = std::chrono::steady_clock::now();
