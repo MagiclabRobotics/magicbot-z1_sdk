@@ -146,6 +146,28 @@ def get_action(cmd):
         return magicbot.TrickAction.ACTION_TRUN_RIGHT_INTRODUCE_LOW
     elif cmd == "340":
         return magicbot.TrickAction.ACTION_WELCOME
+    elif cmd == "408":
+        return magicbot.TrickAction.ACTION_FLY_KISS_LEFT
+    elif cmd == "409":
+        return magicbot.TrickAction.ACTION_FLY_KISS_RIGHT
+    elif cmd == "410":
+        return magicbot.TrickAction.ACTION_SUPERMAN_WAVE
+    elif cmd == "411":
+        return magicbot.TrickAction.ACTION_CLAP_HAND
+    elif cmd == "412":
+        return magicbot.TrickAction.ACTION_HOLD_CERT_REACHOUT
+    elif cmd == "413":
+        return magicbot.TrickAction.ACTION_HOLD_CERT_WITHDRAW
+    elif cmd == "414":
+        return magicbot.TrickAction.ACTION_HUG_REACHOUT
+    elif cmd == "415":
+        return magicbot.TrickAction.ACTION_HUG_WITHDRAW
+    elif cmd == "417":
+        return magicbot.TrickAction.ACTION_TRUN_WAVE_LEFT
+    elif cmd == "418":
+        return magicbot.TrickAction.ACTION_TRUN_WAVE_RIGHT
+    elif cmd == "419":
+        return magicbot.TrickAction.ACTION_RIGHT_HAND_SALUTE
     else:
         return magicbot.TrickAction.ACTION_NONE
 

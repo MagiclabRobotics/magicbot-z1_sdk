@@ -56,11 +56,21 @@ def test_estimator_state_basic():
 
     # Test initial values
     print("   Testing initial values:")
-    print(f"     w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}")
-    print(f"     w_com_pos: {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}")
-    print(f"     w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}")
-    print(f"     w_base_vel: {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}")
-    print(f"     b_base_vel: {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}")
+    print(
+        f"     w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}"
+    )
+    print(
+        f"     w_com_pos: {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}"
+    )
+    print(
+        f"     w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}"
+    )
+    print(
+        f"     w_base_vel: {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}"
+    )
+    print(
+        f"     b_base_vel: {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}"
+    )
 
     # Verify initial values are arrays of 3 zeros
     assert len(estimator_state.w_base_pos) == 3
@@ -90,7 +100,9 @@ def test_estimator_state_set_values():
     print("   Testing setting w_base_pos:")
     test_w_base_pos = [1.5, 2.3, -0.8]
     estimator_state.w_base_pos = test_w_base_pos
-    print(f"     Set w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}")
+    print(
+        f"     Set w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}"
+    )
     assert len(estimator_state.w_base_pos) == 3
     for i in range(3):
         assert abs(estimator_state.w_base_pos[i] - test_w_base_pos[i]) < 1e-6
@@ -99,7 +111,9 @@ def test_estimator_state_set_values():
     print("   Testing setting w_com_pos:")
     test_w_com_pos = [1.4, 2.2, -0.7]
     estimator_state.w_com_pos = test_w_com_pos
-    print(f"     Set w_com_pos: {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}")
+    print(
+        f"     Set w_com_pos: {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}"
+    )
     assert len(estimator_state.w_com_pos) == 3
     for i in range(3):
         assert abs(estimator_state.w_com_pos[i] - test_w_com_pos[i]) < 1e-6
@@ -108,7 +122,9 @@ def test_estimator_state_set_values():
     print("   Testing setting w_com_vel:")
     test_w_com_vel = [0.1, 0.2, -0.05]
     estimator_state.w_com_vel = test_w_com_vel
-    print(f"     Set w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}")
+    print(
+        f"     Set w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}"
+    )
     assert len(estimator_state.w_com_vel) == 3
     for i in range(3):
         assert abs(estimator_state.w_com_vel[i] - test_w_com_vel[i]) < 1e-6
@@ -117,7 +133,9 @@ def test_estimator_state_set_values():
     print("   Testing setting w_base_vel:")
     test_w_base_vel = [0.15, 0.25, -0.08]
     estimator_state.w_base_vel = test_w_base_vel
-    print(f"     Set w_base_vel: {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}")
+    print(
+        f"     Set w_base_vel: {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}"
+    )
     assert len(estimator_state.w_base_vel) == 3
     for i in range(3):
         assert abs(estimator_state.w_base_vel[i] - test_w_base_vel[i]) < 1e-6
@@ -126,7 +144,9 @@ def test_estimator_state_set_values():
     print("   Testing setting b_base_vel:")
     test_b_base_vel = [0.12, 0.22, -0.06]
     estimator_state.b_base_vel = test_b_base_vel
-    print(f"     Set b_base_vel: {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}")
+    print(
+        f"     Set b_base_vel: {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}"
+    )
     assert len(estimator_state.b_base_vel) == 3
     for i in range(3):
         assert abs(estimator_state.b_base_vel[i] - test_b_base_vel[i]) < 1e-6
@@ -148,7 +168,9 @@ def test_estimator_state_modify_elements():
     # Modify w_base_pos
     new_w_base_pos = [3.14, -2.71, 1.41]
     estimator_state.w_base_pos = new_w_base_pos
-    print(f"     Modified w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}")
+    print(
+        f"     Modified w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}"
+    )
     assert abs(estimator_state.w_base_pos[0] - 3.14) < 1e-6
     assert abs(estimator_state.w_base_pos[1] - (-2.71)) < 1e-6
     assert abs(estimator_state.w_base_pos[2] - 1.41) < 1e-6
@@ -156,7 +178,9 @@ def test_estimator_state_modify_elements():
     # Modify w_com_pos
     new_w_com_pos = [2.5, -1.8, 0.9]
     estimator_state.w_com_pos = new_w_com_pos
-    print(f"     Modified w_com_pos: {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}")
+    print(
+        f"     Modified w_com_pos: {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}"
+    )
     assert abs(estimator_state.w_com_pos[0] - 2.5) < 1e-6
     assert abs(estimator_state.w_com_pos[1] - (-1.8)) < 1e-6
     assert abs(estimator_state.w_com_pos[2] - 0.9) < 1e-6
@@ -164,7 +188,9 @@ def test_estimator_state_modify_elements():
     # Modify w_com_vel
     new_w_com_vel = [0.5, -0.3, 0.1]
     estimator_state.w_com_vel = new_w_com_vel
-    print(f"     Modified w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}")
+    print(
+        f"     Modified w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}"
+    )
     assert abs(estimator_state.w_com_vel[0] - 0.5) < 1e-6
     assert abs(estimator_state.w_com_vel[1] - (-0.3)) < 1e-6
     assert abs(estimator_state.w_com_vel[2] - 0.1) < 1e-6
@@ -172,7 +198,9 @@ def test_estimator_state_modify_elements():
     # Modify w_base_vel
     new_w_base_vel = [0.4, -0.25, 0.08]
     estimator_state.w_base_vel = new_w_base_vel
-    print(f"     Modified w_base_vel: {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}")
+    print(
+        f"     Modified w_base_vel: {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}"
+    )
     assert abs(estimator_state.w_base_vel[0] - 0.4) < 1e-6
     assert abs(estimator_state.w_base_vel[1] - (-0.25)) < 1e-6
     assert abs(estimator_state.w_base_vel[2] - 0.08) < 1e-6
@@ -180,7 +208,9 @@ def test_estimator_state_modify_elements():
     # Modify b_base_vel
     new_b_base_vel = [0.35, -0.2, 0.06]
     estimator_state.b_base_vel = new_b_base_vel
-    print(f"     Modified b_base_vel: {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}")
+    print(
+        f"     Modified b_base_vel: {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}"
+    )
     assert abs(estimator_state.b_base_vel[0] - 0.35) < 1e-6
     assert abs(estimator_state.b_base_vel[1] - (-0.2)) < 1e-6
     assert abs(estimator_state.b_base_vel[2] - 0.06) < 1e-6
@@ -200,23 +230,33 @@ def test_estimator_state_comprehensive():
 
     # Body position in world coordinates (x, y, z in meters)
     estimator_state.w_base_pos = [2.5, 1.8, 0.95]
-    print(f"     w_base_pos (body position): {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}")
+    print(
+        f"     w_base_pos (body position): {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}"
+    )
 
     # Center of mass position (slightly different from base)
     estimator_state.w_com_pos = [2.48, 1.78, 0.92]
-    print(f"     w_com_pos (COM position): {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}")
+    print(
+        f"     w_com_pos (COM position): {estimator_state.w_com_pos[0]}, {estimator_state.w_com_pos[1]}, {estimator_state.w_com_pos[2]}"
+    )
 
     # Center of mass velocity (m/s)
     estimator_state.w_com_vel = [0.3, 0.1, 0.0]
-    print(f"     w_com_vel (COM velocity): {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}")
+    print(
+        f"     w_com_vel (COM velocity): {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}"
+    )
 
     # Body velocity in world coordinates (m/s)
     estimator_state.w_base_vel = [0.3, 0.1, 0.0]
-    print(f"     w_base_vel (body velocity in world): {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}")
+    print(
+        f"     w_base_vel (body velocity in world): {estimator_state.w_base_vel[0]}, {estimator_state.w_base_vel[1]}, {estimator_state.w_base_vel[2]}"
+    )
 
     # Body velocity in body coordinates (m/s)
     estimator_state.b_base_vel = [0.32, 0.0, 0.0]
-    print(f"     b_base_vel (body velocity in body frame): {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}")
+    print(
+        f"     b_base_vel (body velocity in body frame): {estimator_state.b_base_vel[0]}, {estimator_state.b_base_vel[1]}, {estimator_state.b_base_vel[2]}"
+    )
 
     # Verify all values
     assert len(estimator_state.w_base_pos) == 3
@@ -268,8 +308,12 @@ def test_estimator_state_edge_cases():
     estimator_state.w_base_vel = small_vel
     estimator_state.b_base_vel = small_vel
 
-    print(f"     Small values - w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}")
-    print(f"     Small values - w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}")
+    print(
+        f"     Small values - w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}"
+    )
+    print(
+        f"     Small values - w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}"
+    )
 
     for i in range(3):
         assert abs(estimator_state.w_base_pos[i] - small_pos[i]) < 1e-6
@@ -286,11 +330,17 @@ def test_estimator_state_edge_cases():
     estimator_state.w_base_vel = large_vel
     estimator_state.b_base_vel = large_vel
 
-    print(f"     Large values - w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}")
-    print(f"     Large values - w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}")
+    print(
+        f"     Large values - w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}"
+    )
+    print(
+        f"     Large values - w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}"
+    )
 
     for i in range(3):
-        assert abs(estimator_state.w_base_pos[i] - large_pos[i]) < 1e-3  # Lower precision for large values
+        assert (
+            abs(estimator_state.w_base_pos[i] - large_pos[i]) < 1e-3
+        )  # Lower precision for large values
         assert abs(estimator_state.w_com_vel[i] - large_vel[i]) < 1e-3
 
     # Test with negative values
@@ -314,8 +364,12 @@ def test_estimator_state_edge_cases():
     estimator_state.b_base_vel[1] = negative_vel[1]
     estimator_state.b_base_vel[2] = negative_vel[2]
 
-    print(f"     Negative values - w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}")
-    print(f"     Negative values - w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}")
+    print(
+        f"     Negative values - w_base_pos: {estimator_state.w_base_pos[0]}, {estimator_state.w_base_pos[1]}, {estimator_state.w_base_pos[2]}"
+    )
+    print(
+        f"     Negative values - w_com_vel: {estimator_state.w_com_vel[0]}, {estimator_state.w_com_vel[1]}, {estimator_state.w_com_vel[2]}"
+    )
 
     for i in range(3):
         assert abs(estimator_state.w_base_pos[i] - negative_pos[i]) < 1e-6
@@ -348,9 +402,15 @@ def test_estimator_state_multiple_instances():
     estimator_state3.w_com_vel = [0.7, 0.8, 0.9]
 
     print("   Testing multiple instances with different values:")
-    print(f"     Instance 1 - w_base_pos: {estimator_state1.w_base_pos[0]}, {estimator_state1.w_base_pos[1]}, {estimator_state1.w_base_pos[2]}")
-    print(f"     Instance 2 - w_base_pos: {estimator_state2.w_base_pos[0]}, {estimator_state2.w_base_pos[1]}, {estimator_state2.w_base_pos[2]}")
-    print(f"     Instance 3 - w_base_pos: {estimator_state3.w_base_pos[0]}, {estimator_state3.w_base_pos[1]}, {estimator_state3.w_base_pos[2]}")
+    print(
+        f"     Instance 1 - w_base_pos: {estimator_state1.w_base_pos[0]}, {estimator_state1.w_base_pos[1]}, {estimator_state1.w_base_pos[2]}"
+    )
+    print(
+        f"     Instance 2 - w_base_pos: {estimator_state2.w_base_pos[0]}, {estimator_state2.w_base_pos[1]}, {estimator_state2.w_base_pos[2]}"
+    )
+    print(
+        f"     Instance 3 - w_base_pos: {estimator_state3.w_base_pos[0]}, {estimator_state3.w_base_pos[1]}, {estimator_state3.w_base_pos[2]}"
+    )
 
     # Verify each instance maintains its own values
     assert abs(estimator_state1.w_base_pos[0] - 1.0) < 1e-6
@@ -386,10 +446,18 @@ def main():
         print("🎉 All EstimatorState binding tests completed successfully!")
         print("\nSummary:")
         print("  ✓ EstimatorState - w_base_pos (Body position in world coordinates)")
-        print("  ✓ EstimatorState - w_com_pos (Center of mass position in world coordinates)")
-        print("  ✓ EstimatorState - w_com_vel (Center of mass linear velocity in world coordinates)")
-        print("  ✓ EstimatorState - w_base_vel (Body linear velocity in world coordinates)")
-        print("  ✓ EstimatorState - b_base_vel (Body linear velocity in body coordinates)")
+        print(
+            "  ✓ EstimatorState - w_com_pos (Center of mass position in world coordinates)"
+        )
+        print(
+            "  ✓ EstimatorState - w_com_vel (Center of mass linear velocity in world coordinates)"
+        )
+        print(
+            "  ✓ EstimatorState - w_base_vel (Body linear velocity in world coordinates)"
+        )
+        print(
+            "  ✓ EstimatorState - b_base_vel (Body linear velocity in body coordinates)"
+        )
         print("  ✓ Basic read/write operations")
         print("  ✓ Array element modification")
         print("  ✓ Comprehensive realistic values")
@@ -408,4 +476,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-

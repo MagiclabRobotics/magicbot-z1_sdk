@@ -178,12 +178,11 @@ struct JoystickCommand {
  * @brief Robot state enumeration, suitable for state machine control
  */
 enum class GaitMode : int32_t {
-  GAIT_PASSIVE = 0,          // Idle mode
-  GAIT_RECOVERY_STAND = 1,   // Standing lock/standing recovery
-  GAIT_BALANCE_STAND = 46,   // Balanced standing (supports movement)
-  GAIT_ARM_SWING_WALK = 78,  // Arm swinging walk
-  GAIT_HUMANOID_WALK = 79,   // Humanoid walking
-  GAIT_LOWLEVL_SDK = 200,    // Low-level control SDK mode
+  GAIT_PASSIVE = 0,         // Idle mode
+  GAIT_RECOVERY_STAND = 1,  // Standing lock/standing recovery
+  GAIT_BALANCE_STAND = 46,  // Balanced standing (supports movement)
+  GAIT_HUMANOID_WALK = 79,  // Humanoid walking
+  GAIT_LOWLEVL_SDK = 200,   // Low-level control SDK mode
 };
 
 /**
@@ -203,6 +202,17 @@ enum class TrickAction : int32_t {
   ACTION_TRUN_RIGHT_INTRODUCE_HIGH = 306,  // Turn right introduction - high
   ACTION_TRUN_RIGHT_INTRODUCE_LOW = 307,   // Turn right introduction - low
   ACTION_WELCOME = 340,                    // Welcome
+  ACTION_FLY_KISS_LEFT = 408,              // Fly kiss (left hand)
+  ACTION_FLY_KISS_RIGHT = 409,             // Fly kiss (right hand)
+  ACTION_SUPERMAN_WAVE = 410,              // Superman wave
+  ACTION_CLAP_HAND = 411,                  // Clap hands
+  ACTION_HOLD_CERT_REACHOUT = 412,         // Hold certificate - reach out
+  ACTION_HOLD_CERT_WITHDRAW = 413,         // Hold certificate - withdraw
+  ACTION_HUG_REACHOUT = 414,               // Hug - reach out
+  ACTION_HUG_WITHDRAW = 415,               // Hug - withdraw
+  ACTION_TRUN_WAVE_LEFT = 417,             // Turn wave (left hand)
+  ACTION_TRUN_WAVE_RIGHT = 418,            // Turn wave (right hand)
+  ACTION_RIGHT_HAND_SALUTE = 419,          // Right hand salute
 };
 
 /**

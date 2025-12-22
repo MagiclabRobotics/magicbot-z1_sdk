@@ -48,7 +48,13 @@ def body_imu_callback(imu_data):
         logging.info("+++++++++++++ Received body IMU data")
         # Print IMU data
         logging.info("Received body IMU data, timestamp: %d", imu_data.timestamp)
-        logging.info("Received body IMU data, orientation: [%f,%f,%f,%f]", imu_data.orientation[0], imu_data.orientation[1], imu_data.orientation[2], imu_data.orientation[3])
+        logging.info(
+            "Received body IMU data, orientation: [%f,%f,%f,%f]",
+            imu_data.orientation[0],
+            imu_data.orientation[1],
+            imu_data.orientation[2],
+            imu_data.orientation[3],
+        )
         logging.info(
             "Received body IMU data, angular_velocity: [%f,%f,%f]",
             imu_data.angular_velocity[0],
@@ -193,18 +199,45 @@ def waist_state_callback(joint_state):
         )
     waist_state_counter += 1
 
+
 def estimator_state_callback(estimator_state):
     """Estimator state callback function"""
     global estimator_state_counter
     if estimator_state_counter % 1000 == 0:
         logging.info("+++++++++++++ Received estimator state data")
         # Print estimator state data
-        logging.info("Received estimator state data, w_base_pos: [%f,%f,%f]", estimator_state.w_base_pos[0], estimator_state.w_base_pos[1], estimator_state.w_base_pos[2])
-        logging.info("Received estimator state data, w_com_pos: [%f,%f,%f]", estimator_state.w_com_pos[0], estimator_state.w_com_pos[1], estimator_state.w_com_pos[2])
-        logging.info("Received estimator state data, w_com_vel: [%f,%f,%f]", estimator_state.w_com_vel[0], estimator_state.w_com_vel[1], estimator_state.w_com_vel[2])
-        logging.info("Received estimator state data, w_base_vel: [%f,%f,%f]", estimator_state.w_base_vel[0], estimator_state.w_base_vel[1], estimator_state.w_base_vel[2])
-        logging.info("Received estimator state data, b_base_vel: [%f,%f,%f]", estimator_state.b_base_vel[0], estimator_state.b_base_vel[1], estimator_state.b_base_vel[2])
+        logging.info(
+            "Received estimator state data, w_base_pos: [%f,%f,%f]",
+            estimator_state.w_base_pos[0],
+            estimator_state.w_base_pos[1],
+            estimator_state.w_base_pos[2],
+        )
+        logging.info(
+            "Received estimator state data, w_com_pos: [%f,%f,%f]",
+            estimator_state.w_com_pos[0],
+            estimator_state.w_com_pos[1],
+            estimator_state.w_com_pos[2],
+        )
+        logging.info(
+            "Received estimator state data, w_com_vel: [%f,%f,%f]",
+            estimator_state.w_com_vel[0],
+            estimator_state.w_com_vel[1],
+            estimator_state.w_com_vel[2],
+        )
+        logging.info(
+            "Received estimator state data, w_base_vel: [%f,%f,%f]",
+            estimator_state.w_base_vel[0],
+            estimator_state.w_base_vel[1],
+            estimator_state.w_base_vel[2],
+        )
+        logging.info(
+            "Received estimator state data, b_base_vel: [%f,%f,%f]",
+            estimator_state.b_base_vel[0],
+            estimator_state.b_base_vel[1],
+            estimator_state.b_base_vel[2],
+        )
     estimator_state_counter += 1
+
 
 def main():
     """Main function"""
