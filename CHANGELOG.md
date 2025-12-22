@@ -5,16 +5,23 @@ All significant changes will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and adheres to [Semantic Versioning](https://semver.org/).
 
+## [v1.2.4] - 2025-12-22
+
+**Corresponding Core Firmware Version: >= MagicBot-Z1 20251216**
+
+### Added
+- Add new trick actions in high-level motion control mode
+
 ## [v1.2.3] - 2025-12-16
 
-**Corresponding Core Firmware Version: >= MagicBot-Gen1 20251216**
+**Corresponding Core Firmware Version: >= MagicBot-Z1 20251216**
 
 ### Added
 - Added state estimation topic interface in the low-level motion mode;
 
 ## [v1.2.2-hotfix1] - 2025-12-11
 
-**Corresponding Core Firmware Version: >= MagicBot-Gen1 20251128**
+**Corresponding Core Firmware Version: >= MagicBot-Z1 20251128**
 
 ### Added
 - Added SDK development documentation;
