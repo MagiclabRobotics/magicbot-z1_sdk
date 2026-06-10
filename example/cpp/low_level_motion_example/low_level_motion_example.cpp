@@ -121,9 +121,25 @@ int main() {
       arm_command.joints[ii].toq = 0.0;
       arm_command.joints[ii].kp = 0.0;
       arm_command.joints[ii].kd = 0.0;
+      arm_command.joints[ii].extra_kd = 0.0;
     }
     // Publish control command
     controller.PublishArmCommand(arm_command);
+    std::cout << "+++++++++++ publish arm command." << std::endl;
+
+    // JointCommand leg_command;
+    // leg_command.joints.resize(kLegJointNum);
+    // for (int ii = 0; ii < kLegJointNum; ii++) {
+    //   leg_command.joints[ii].operation_mode = 200;
+    //   leg_command.joints[ii].pos = 0.0;
+    //   leg_command.joints[ii].vel = 0.0;
+    //   leg_command.joints[ii].toq = 0.0;
+    //   leg_command.joints[ii].kp = 0.0;
+    //   leg_command.joints[ii].kd = 0.0;
+    //   leg_command.joints[ii].extra_kd = 0.0;
+    // }
+    // controller.PublishLegCommand(leg_command);
+    // std::cout << "+++++++++++ publish leg command." << std::endl;
 
     // Send control commands at 500Hz frequency (2ms)
     now += std::chrono::microseconds(2000);

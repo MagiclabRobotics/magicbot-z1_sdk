@@ -42,6 +42,7 @@ except ImportError as e:
                 self.toq = 0.0
                 self.kp = 0.0
                 self.kd = 0.0
+                self.extra_kd = 0.0
 
         class JointCommand:
             def __init__(self):
@@ -82,6 +83,7 @@ def test_single_joint_command():
     print(f"     toq: {joint_cmd.toq}")
     print(f"     kp: {joint_cmd.kp}")
     print(f"     kd: {joint_cmd.kd}")
+    print(f"     extra_kd: {joint_cmd.extra_kd}")
 
     # Test setting values
     print("   Testing setting values:")
@@ -91,6 +93,7 @@ def test_single_joint_command():
     joint_cmd.toq = 10.5
     joint_cmd.kp = 100.0
     joint_cmd.kd = 20.0
+    joint_cmd.extra_kd = 5.0
 
     print(f"     Set operation_mode: {joint_cmd.operation_mode}")
     print(f"     Set pos: {joint_cmd.pos}")
@@ -98,6 +101,7 @@ def test_single_joint_command():
     print(f"     Set toq: {joint_cmd.toq}")
     print(f"     Set kp: {joint_cmd.kp}")
     print(f"     Set kd: {joint_cmd.kd}")
+    print(f"     Set extra_kd: {joint_cmd.extra_kd}")
 
     # Verify values
     assert joint_cmd.operation_mode == 100
@@ -106,6 +110,7 @@ def test_single_joint_command():
     assert 10.5 - 1e-6 < joint_cmd.toq < 10.5 + 1e-6
     assert 100.0 - 1e-6 < joint_cmd.kp < 100.0 + 1e-6
     assert 20.0 - 1e-6 < joint_cmd.kd < 20.0 + 1e-6
+    assert 5.0 - 1e-6 < joint_cmd.extra_kd < 5.0 + 1e-6
 
     print("   ✓ SingleJointCommand test passed")
     return True
@@ -338,7 +343,7 @@ def main():
             "🎉 All JointState and JointCommand binding tests completed successfully!"
         )
         print("\nSummary:")
-        print("  ✓ SingleJointCommand - operation_mode, pos, vel, toq, kp, kd")
+        print("  ✓ SingleJointCommand - operation_mode, pos, vel, toq, kp, kd, extra_kd")
         print("  ✓ JointCommand - timestamp, joints array")
         print(
             "  ✓ SingleJointState - status_word, posH, posL, vel, toq, current, err_code"

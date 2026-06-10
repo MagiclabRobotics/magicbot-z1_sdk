@@ -5,18 +5,71 @@
 #include <string>
 #include <vector>
 
+#include "magic_export.h"
+
 namespace magic::z1 {
 
 /************************************************************
  *                        Constant Information                *
  ************************************************************/
+constexpr uint8_t kHandNum = 2;  ///< Number of dexterous hands (left and right hand)
 
-constexpr uint8_t kHandJointNum = 6;   ///< Number of dexterous hand joints
-constexpr uint8_t kHandNum = 2;        ///< Number of dexterous hands (left and right hand)
-constexpr uint8_t kHeadJointNum = 2;   ///< Number of head joints, some SKU versions support 1-joint control for waist
-constexpr uint8_t kArmJointNum = 14;   ///< Number of arm joints (left and right arm), left arm joints 1-7, right arm joints 8-14, some SKU versions support 6-joint control for left arm and 6-joint control for right arm
-constexpr uint8_t kWaistJointNum = 1;  ///< Number of waist joints
-constexpr uint8_t kLegJointNum = 12;   ///< Number of leg joints
+/// Default joint counts for Z1_V3_HAND_S01 (used before Initialize or as compile-time reference).
+constexpr uint8_t kDefaultHandJointNum  = 6;
+constexpr uint8_t kDefaultHeadJointNum  = 1;
+constexpr uint8_t kDefaultArmJointNum   = 10;
+constexpr uint8_t kDefaultWaistJointNum = 1;
+constexpr uint8_t kDefaultLegJointNum   = 12;
+
+/**
+ * @brief Robot SKU type, selected in MagicRobot::Initialize to configure joint parameters.
+ */
+enum class RobotType : uint8_t {
+  UNKNOWN = 0,
+  Z1_V3_HAND_S01 = 1,  ///< 5DoF x2 arms, 1 head, 1 waist, 6DoF x2 hands, 12 leg joints
+  Z1_V5_HAND_S01 = 2,  ///< 7DoF x2 arms, 1 head, 1 waist, 6DoF x2 hands, 12 leg joints
+};
+
+/**
+ * @brief Runtime joint parameter set for the selected robot type.
+ */
+struct RobotJointParams {
+  uint8_t hand_joint_num  = kDefaultHandJointNum;
+  uint8_t head_joint_num  = kDefaultHeadJointNum;
+  uint8_t arm_joint_num   = kDefaultArmJointNum;
+  uint8_t waist_joint_num = kDefaultWaistJointNum;
+  uint8_t leg_joint_num   = kDefaultLegJointNum;
+};
+
+/**
+ * @brief Global robot configuration, set once during MagicRobot::Initialize.
+ */
+class MAGIC_EXPORT_API RobotConfig {
+ public:
+  static RobotConfig& Instance();
+
+  void SetRobotType(RobotType robot_type);
+  RobotType GetRobotType() const;
+  const RobotJointParams& GetJointParams() const;
+  static RobotJointParams ParamsForType(RobotType robot_type);
+
+ private:
+  RobotType robot_type_{RobotType::Z1_V3_HAND_S01};
+  RobotJointParams params_{kDefaultHandJointNum, kDefaultHeadJointNum, kDefaultArmJointNum, kDefaultWaistJointNum,
+                             kDefaultLegJointNum};
+};
+
+MAGIC_EXPORT_API uint8_t GetHandJointNum();
+MAGIC_EXPORT_API uint8_t GetHeadJointNum();
+MAGIC_EXPORT_API uint8_t GetArmJointNum();
+MAGIC_EXPORT_API uint8_t GetWaistJointNum();
+MAGIC_EXPORT_API uint8_t GetLegJointNum();
+
+#define kHandJointNum (::magic::z1::GetHandJointNum())
+#define kHeadJointNum (::magic::z1::GetHeadJointNum())
+#define kArmJointNum (::magic::z1::GetArmJointNum())
+#define kWaistJointNum (::magic::z1::GetWaistJointNum())
+#define kLegJointNum (::magic::z1::GetLegJointNum())
 
 /************************************************************
  *                        Interface Information               *
@@ -137,7 +190,8 @@ typedef struct robot_state {
 enum class ControllerLevel : int8_t {
   UNKKOWN = 0,
   HighLevel = 1,  ///< High-level controller
-  LowLevel = 2    ///< Low-level controller
+  LowLevel = 2,   ///< Low-level controller
+  HybridLevel = 3 ///< Hybrid control level (high-level + upper-body control)
 };
 
 /**
@@ -183,6 +237,7 @@ enum class GaitMode : int32_t {
   GAIT_BALANCE_STAND = 46,  // Balanced standing (supports movement)
   GAIT_HUMANOID_WALK = 79,  // Humanoid walking
   GAIT_LOWLEVL_SDK = 200,   // Low-level control SDK mode
+  GAIT_HYBRID_SDK = 201,    // Hybrid control SDK mode
 };
 
 /**
@@ -202,6 +257,7 @@ enum class TrickAction : int32_t {
   ACTION_TRUN_RIGHT_INTRODUCE_HIGH = 306,  // Turn right introduction - high
   ACTION_TRUN_RIGHT_INTRODUCE_LOW = 307,   // Turn right introduction - low
   ACTION_WELCOME = 340,                    // Welcome
+  ACTION_CHE_GUAN_SUO = 341,               // CheGuanSuo
   ACTION_FLY_KISS_LEFT = 408,              // Fly kiss (left hand)
   ACTION_FLY_KISS_RIGHT = 409,             // Fly kiss (right hand)
   ACTION_SUPERMAN_WAVE = 410,              // Superman wave
@@ -251,6 +307,26 @@ struct HandState {
 };
 
 /**
+ * @brief State of one hand (array-based error code fields)
+ */
+struct OneHandState {
+  std::vector<int16_t> status_word;  ///< Status word
+  std::vector<double> pos;           ///< Actual position
+  std::vector<double> toq;           ///< Actual torque
+  std::vector<double> cur;           ///< Actual current
+  std::vector<int32_t> error_code;   ///< Error code
+};
+
+/**
+ * @brief State of both hands, used by upper-body controller
+ */
+struct AllHandState {
+  int64_t timestamp = 0;               ///< Timestamp (unit: nanoseconds)
+  std::vector<OneHandState> state;     ///< Both hands states
+  int16_t type = 0;                    ///< Dexterous hand type: 0 self-developed, 1 Qiangnao
+};
+
+/**
  * @brief Control command for a single joint
  */
 struct SingleJointCommand {
@@ -260,6 +336,7 @@ struct SingleJointCommand {
   double toq = 0.0;              ///< Target torque (unit: Nm)
   double kp = 0.0;               ///< Position loop control gain (proportional term)
   double kd = 0.0;               ///< Velocity loop control gain (derivative term)
+  double extra_kd = 0.0;         ///< Extra velocity loop control gain (derivative term)  
 };
 
 /**
@@ -272,6 +349,7 @@ struct SingleJointCommand {
  */
 struct JointCommand {
   int64_t timestamp = 0;                   ///< Timestamp (unit: nanoseconds)
+  int32_t motion_mode = 0;                 ///< Motion mode (0 passthrough, 1 movej, 2 movel, 3 movec)
   std::vector<SingleJointCommand> joints;  ///< Control commands for all joints
 };
 
@@ -509,6 +587,18 @@ struct WakeupStatus {
    * The orientation at which the voice wake-up is triggered, in radians.
    */
   double wakeup_orientation = 0.0;
+};
+
+/**
+ * @brief Dialog intent data structure
+ */
+struct DialogIntent {
+  /**
+   * @brief Intent event string
+   *
+   * Supported values: "event1", "event2", "event3", "event4".
+   */
+  std::string intent;
 };
 
 /**

@@ -146,6 +146,8 @@ def get_action(cmd):
         return magicbot.TrickAction.ACTION_TRUN_RIGHT_INTRODUCE_LOW
     elif cmd == "340":
         return magicbot.TrickAction.ACTION_WELCOME
+    elif cmd == "341":
+        return magicbot.TrickAction.ACTION_CHE_GUAN_SUO
     elif cmd == "408":
         return magicbot.TrickAction.ACTION_FLY_KISS_LEFT
     elif cmd == "409":

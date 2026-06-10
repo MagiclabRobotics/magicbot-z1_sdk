@@ -24,11 +24,13 @@ class MAGIC_EXPORT_API AudioController final : public NonCopyable {
   // Message pointer type definitions (smart pointers for memory management)
   using AudioStreamPtr = std::shared_ptr<AudioStream>;    // Audio stream message pointer
   using WakeupStatusPtr = std::shared_ptr<WakeupStatus>;  // Wakeup status message pointer
+  using DialogIntentPtr = std::shared_ptr<DialogIntent>;  // Dialog intent message pointer
 
   // Audio stream data callback function type definitions
   using OriginAudioStreamCallback = std::function<void(const AudioStreamPtr)>;  // Origin audio stream data callback
   using BfAudioStreamCallback = std::function<void(const AudioStreamPtr)>;      // BF audio stream data callback
   using WakeupStatusCallback = std::function<void(const WakeupStatusPtr)>;      // Wake-up status callback
+  using DialogIntentCallback = std::function<void(const DialogIntentPtr)>;      // Dialog intent callback
 
  public:
   /**
@@ -68,6 +70,19 @@ class MAGIC_EXPORT_API AudioController final : public NonCopyable {
    * @return Operation status, returns Status::OK on success.
    */
   Status Stop();
+
+  /**
+   * @brief Start a voice dialog session with optional opening text.
+   * @param text Opening text for dialog context.
+   * @return Operation status, returns Status::OK on success.
+   */
+  Status StartDialog(const std::string& text);
+
+  /**
+   * @brief Stop current voice dialog session.
+   * @return Operation status, returns Status::OK on success.
+   */
+  Status StopDialog();
 
   /**
    * @brief Set the volume of audio output.
@@ -139,6 +154,17 @@ class MAGIC_EXPORT_API AudioController final : public NonCopyable {
    * @brief Unsubscribe from voice wake-up status
    */
   void UnsubscribeWakeupStatus();
+
+  /**
+   * @brief Subscribe to dialog intent events.
+   * @param callback Processing callback after receiving dialog intent event.
+   */
+  void SubscribeDialogIntent(const DialogIntentCallback callback);
+
+  /**
+   * @brief Unsubscribe from dialog intent events.
+   */
+  void UnsubscribeDialogIntent();
 
  private:
   std::atomic_bool is_shutdown_{true};  // Mark whether initialized

@@ -16,6 +16,9 @@ using LowLevelMotionControllerPtr = std::unique_ptr<LowLevelMotionController>;
 class HighLevelMotionController;
 using HighLevelMotionControllerPtr = std::unique_ptr<HighLevelMotionController>;
 
+class UpperBodyMotionController;
+using UpperBodyMotionControllerPtr = std::unique_ptr<UpperBodyMotionController>;
+
 /**
  * @brief Abstract base class that defines common interfaces for robot motion controllers.
  *
@@ -275,6 +278,33 @@ class MAGIC_EXPORT_API LowLevelMotionController final : public MotionControllerB
    * @brief Unsubscribe from estimator state data
    */
   void UnsubscribeEstimatorState();
+};
+
+/**
+ * @class UpperBodyMotionController
+ * @brief Upper-body motion controller for mixed upper-body joints (arms + waist + head) and both hands.
+ */
+class MAGIC_EXPORT_API UpperBodyMotionController final : public MotionControllerBase {
+  using UpperBodyJointStatePtr = std::shared_ptr<JointState>;
+  using AllHandStatePtr = std::shared_ptr<AllHandState>;
+
+  using UpperBodyJointStateCallback = std::function<void(const UpperBodyJointStatePtr)>;
+  using AllHandStateCallback = std::function<void(const AllHandStatePtr)>;
+
+ public:
+  UpperBodyMotionController();
+  virtual ~UpperBodyMotionController();
+
+  virtual bool Initialize() override;
+  virtual void Shutdown() override;
+
+  void SubscribeUpperBodyState(UpperBodyJointStateCallback callback);
+  void UnsubscribeUpperBodyState();
+  Status PublishUpperBodyCommand(const JointCommand& command);
+
+  void SubscribeAllHandState(AllHandStateCallback callback);
+  void UnsubscribeAllHandState();
+  Status PublishAllHandCommand(const HandCommand& command);
 };
 
 }  // namespace magic::z1::motion

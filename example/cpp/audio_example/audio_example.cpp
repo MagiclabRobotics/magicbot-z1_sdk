@@ -26,6 +26,8 @@ void print_help() {
   std::cout << "  2        Function 2: Set volume\n";
   std::cout << "  3        Function 3: Play TTS\n";
   std::cout << "  4        Function 4: Stop playback\n";
+  std::cout << "  a        Function a: Start dialog\n";
+  std::cout << "  b        Function b: Stop dialog\n";
   std::cout << "  Audio stream Functions:\n";
   std::cout << "  5        Function 5: Open audio stream\n";
   std::cout << "  6        Function 6: Close audio stream\n";
@@ -36,6 +38,8 @@ void print_help() {
   std::cout << "  w        Function w: Close wakeup status stream\n";
   std::cout << "  e        Function e: Subscribe to wakeup status\n";
   std::cout << "  r        Function r: Unsubscribe to wakeup status\n";
+  std::cout << "  z        Function z: Subscribe dialog intent\n";
+  std::cout << "  x        Function x: Unsubscribe dialog intent\n";
   std::cout << "\n";
   std::cout << "  ?        Function ?: Print help\n";
   std::cout << "  ESC      Exit program\n";
@@ -114,6 +118,34 @@ void StopTts() {
     return;
   }
   std::cout << "stop tts success" << std::endl;
+}
+
+void StartDialog() {
+  // Get audio controller
+  auto& controller = robot.GetAudioController();
+  // Start dialog
+  auto status = controller.StartDialog("你好，有什么可以帮你的么");
+  if (status.code != ErrorCode::OK) {
+    std::cerr << "start dialog failed"
+              << ", code: " << status.code
+              << ", message: " << status.message << std::endl;
+    return;
+  }
+  std::cout << "start dialog success" << std::endl;
+}
+
+void StopDialog() {
+  // Get audio controller
+  auto& controller = robot.GetAudioController();
+  // Stop dialog
+  auto status = controller.StopDialog();
+  if (status.code != ErrorCode::OK) {
+    std::cerr << "stop dialog failed"
+              << ", code: " << status.code
+              << ", message: " << status.message << std::endl;
+    return;
+  }
+  std::cout << "stop dialog success" << std::endl;
 }
 
 void OpenAudioStream() {
@@ -213,6 +245,24 @@ void UnsubscribeWakeupStatus() {
   controller.UnsubscribeWakeupStatus();
 }
 
+void SubscribeDialogIntent() {
+  // Get audio controller
+  auto& controller = robot.GetAudioController();
+  // Subscribe dialog intent
+  controller.SubscribeDialogIntent([](const std::shared_ptr<DialogIntent> data) {
+    std::cout << "Received dialog intent, intent: " << data->intent << std::endl;
+  });
+  std::cout << "Subscribed to dialog intent" << std::endl;
+}
+
+void UnsubscribeDialogIntent() {
+  // Get audio controller
+  auto& controller = robot.GetAudioController();
+  // Unsubscribe dialog intent
+  controller.UnsubscribeDialogIntent();
+  std::cout << "Unsubscribed from dialog intent" << std::endl;
+}
+
 int main(int argc, char* argv[]) {
   // Bind SIGINT (Ctrl+C)
   signal(SIGINT, signalHandler);
@@ -268,6 +318,16 @@ int main(int argc, char* argv[]) {
         StopTts();
         break;
       }
+      case 'A':
+      case 'a': {
+        StartDialog();
+        break;
+      }
+      case 'B':
+      case 'b': {
+        StopDialog();
+        break;
+      }
       // 2. Audio stream Functions
       case '5': {
         OpenAudioStream();
@@ -304,6 +364,16 @@ int main(int argc, char* argv[]) {
       case 'R':
       case 'r': {
         UnsubscribeWakeupStatus();
+        break;
+      }
+      case 'Z':
+      case 'z': {
+        SubscribeDialogIntent();
+        break;
+      }
+      case 'X':
+      case 'x': {
+        UnsubscribeDialogIntent();
         break;
       }
       case '?': {

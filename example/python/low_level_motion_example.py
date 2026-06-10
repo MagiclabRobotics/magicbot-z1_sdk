@@ -367,16 +367,20 @@ def main():
 
             # Publish arm joint control command
             controller.publish_arm_command(arm_command)
+            logging.info("+++++++++++++ Published arm joint control command")
 
             # Publish leg joint control command
             controller.publish_leg_command(leg_command)
-
+            logging.info("+++++++++++++ Published leg joint control command")
+            
             # Publish waist joint control command
             controller.publish_waist_command(waist_command)
-
+            logging.info("+++++++++++++ Published waist joint control command")
+           
             # Publish head joint control command
             controller.publish_head_command(head_command)
-
+            logging.info("+++++++++++++ Published head joint control command")
+            
             next_t += interval
             sleep_time = next_t - time.perf_counter()
             if sleep_time > 0:

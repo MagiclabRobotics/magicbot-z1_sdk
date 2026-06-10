@@ -56,16 +56,22 @@ int main() {
     return -1;
   }
 
-  std::cout << "health: " << state.bms_data.battery_health
-            << ", percentage: " << state.bms_data.battery_percentage
-            << ", state: " << std::to_string((int8_t)state.bms_data.battery_state)
-            << ", power_supply_status: " << std::to_string((int8_t)state.bms_data.power_supply_status)
+  std::cout << "*** battery health: " << state.bms_data.battery_health
+            << ", battery percentage: " << state.bms_data.battery_percentage
+            << ", battery state: " << std::to_string((int8_t)state.bms_data.battery_state)
+            << ", battery power supply status: " << std::to_string((int8_t)state.bms_data.power_supply_status)
             << std::endl;
 
   auto& faults = state.faults;
-  for (auto& [code, msg] : faults) {
-    std::cout << "code: " << std::to_string(code)
-              << ", message: " << msg << std::endl;
+  if (faults.size() > 0) {
+    std::cout << "*** robot has " << faults.size() << " faults" << std::endl;
+    for (auto& fault : faults) {
+      std::cout << "error code: " << fault.error_code << std::endl;
+      std::cout << "error code: 0x" << std::hex << std::uppercase << fault.error_code << std::dec
+                << std::nouppercase << ", error message: " << fault.error_message << std::endl;
+    }
+  } else {
+    std::cout << "*** robot has no faults" << std::endl;
   }
 
   // Disconnect from robot

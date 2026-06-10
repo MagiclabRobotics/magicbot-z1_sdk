@@ -42,6 +42,8 @@ def print_help():
     logging.info("  2        Function 2: Set volume")
     logging.info("  3        Function 3: Play TTS")
     logging.info("  4        Function 4: Stop playback")
+    logging.info("  A        Function A: Start dialog")
+    logging.info("  B        Function B: Stop dialog")
     logging.info("")
     logging.info("Audio stream Functions:")
     logging.info("  5        Function 5: Open audio stream")
@@ -54,6 +56,8 @@ def print_help():
     logging.info("  W        Function W: Close wakeup status stream")
     logging.info("  E        Function E: Subscribe to wakeup status")
     logging.info("  R        Function R: Unsubscribe to wakeup status")
+    logging.info("  Z        Function Z: Subscribe dialog intent")
+    logging.info("  X        Function X: Unsubscribe dialog intent")
     logging.info("")
     logging.info("  ?        Function ?: Print help")
     logging.info("  ESC      Exit program")
@@ -148,6 +152,46 @@ def stop_tts():
         logging.info("Successfully stopped TTS")
     except Exception as e:
         logging.error("Exception occurred while stopping TTS: %s", e)
+
+
+def start_dialog(text):
+    """Start dialog"""
+    global robot
+    try:
+        # Get audio controller
+        controller = robot.get_audio_controller()
+
+        # Start dialog
+        status = controller.start_dialog(text)
+        if status.code != magicbot.ErrorCode.OK:
+            logging.error(
+                "Failed to start dialog, code: %s, message: %s", status.code, status.message
+            )
+            return
+
+        logging.info("Successfully started dialog")
+    except Exception as e:
+        logging.error("Exception occurred while starting dialog: %s", e)
+
+
+def stop_dialog():
+    """Stop dialog"""
+    global robot
+    try:
+        # Get audio controller
+        controller = robot.get_audio_controller()
+
+        # Stop dialog
+        status = controller.stop_dialog()
+        if status.code != magicbot.ErrorCode.OK:
+            logging.error(
+                "Failed to stop dialog, code: %s, message: %s", status.code, status.message
+            )
+            return
+
+        logging.info("Successfully stopped dialog")
+    except Exception as e:
+        logging.error("Exception occurred while stopping dialog: %s", e)
 
 
 def open_audio_stream():
@@ -355,6 +399,34 @@ def subscribe_wakeup_status():
         logging.error("Exception occurred while subscribing to wakeup status: %s", e)
 
 
+def subscribe_dialog_intent():
+    """Subscribe to dialog intent"""
+    global robot
+    try:
+        controller = robot.get_audio_controller()
+
+        def dialog_intent_callback(dialog_intent):
+            logging.info("Received dialog intent, intent: %s", dialog_intent.intent)
+            sys.stdout.write("\r")
+            sys.stdout.flush()
+
+        controller.subscribe_dialog_intent(dialog_intent_callback)
+        logging.info("Subscribed to dialog intent stream")
+    except Exception as e:
+        logging.error("Exception occurred while subscribing to dialog intent: %s", e)
+
+
+def unsubscribe_dialog_intent():
+    """Unsubscribe from dialog intent"""
+    global robot
+    try:
+        controller = robot.get_audio_controller()
+        controller.unsubscribe_dialog_intent()
+        logging.info("Unsubscribed from dialog intent stream")
+    except Exception as e:
+        logging.error("Exception occurred while unsubscribing dialog intent: %s", e)
+
+
 def get_user_input():
     """Get user input - Read a single line of data"""
     try:
@@ -441,6 +513,13 @@ def main():
                 # 1.4 Stop TTS
                 elif key == "4":
                     stop_tts()
+                # 1.5 Start dialog
+                elif key.upper() == "A":
+                    text = args[0] if args else "你好，有什么可以帮你的么"
+                    start_dialog(text)
+                # 1.6 Stop dialog
+                elif key.upper() == "B":
+                    stop_dialog()
                 # 2. Audio Stream Functions
                 # 2.1 Open audio stream
                 elif key == "5":
@@ -467,6 +546,12 @@ def main():
                 # 3.4 Unsubscribe from wakeup status stream
                 elif key.upper() == "R":
                     unsubscribe_wakeup_status()
+                # 3.5 Subscribe dialog intent stream
+                elif key.upper() == "Z":
+                    subscribe_dialog_intent()
+                # 3.6 Unsubscribe dialog intent stream
+                elif key.upper() == "X":
+                    unsubscribe_dialog_intent()
                 # 4. Print help information
                 elif key.upper() == "?":
                     print_help()

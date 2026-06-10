@@ -68,6 +68,66 @@ If you used the installation feature, you can also use the installation director
 export PYTHONPATH=${INSTALL_DIR}/lib:$PYTHONPATH
 ```
 
+## Packaged Executable (`viz.py`)
+
+`viz.py` can be built into a single standalone executable (no `PYTHONPATH` / `LD_LIBRARY_PATH` setup required at runtime).
+
+### Prerequisites
+
+- SDK built: run `./build.sh` from the repository root
+- PyInstaller: `pip install pyinstaller`
+
+### Build
+
+```bash
+cd example/python/viz_example
+chmod +x build_viz.sh
+./build_viz.sh
+```
+
+Output: `example/python/viz_example/dist/magicbot_z1_viz`
+
+### Run
+
+```bash
+cd example/python/viz_example
+./dist/magicbot_z1_viz
+```
+
+The bundle includes `magicbot_z1_python` and `libmagicbot_z1_sdk.so`. Re-run `./build_viz.sh` after rebuilding the SDK or changing `viz.py`.
+
+### GLIBC compatibility (important on Linux)
+
+PyInstaller bundles `libpython3.10.so` from the **build host**. Linux glibc is **not** backward compatible: an executable built on Ubuntu 22.04 (glibc 2.35) will fail on Ubuntu 20.04 or older onboard computers with:
+
+```
+GLIBC_2.35 not found (required by .../libpython3.10.so.1.0)
+```
+
+**Fix:** rebuild inside Ubuntu 20.04 (glibc 2.31):
+
+```bash
+cd example/python/viz_example
+chmod +x build_viz_docker.sh
+./build_viz_docker.sh
+```
+
+The Docker image uses Ubuntu 20.04 system **Python 3.8** (no extra PPA). It compiles the SDK into `build-focal/` and writes `viz_example/dist/magicbot_z1_viz` for targets with **glibc >= 2.31**.
+
+If a previous Docker build failed midway, remove the stale directory before retrying:
+
+```bash
+rm -rf build-focal
+```
+
+Check target glibc:
+
+```bash
+ldd --version
+```
+
+Rule of thumb: build on the **oldest** Linux version you need to support.
+
 ## Running Examples
 
 After configuring environment variables, run the example:
@@ -84,7 +144,13 @@ Magicbot Z1
 
 ## Troubleshooting
 
-### 1. ImportError: No module named 'magicbot_z1_python'
+### 1. `GLIBC_2.35 not found` when running `magicbot_z1_viz`
+
+The executable was built on a newer Linux than the target machine.
+
+**Solution:** use `./build_viz_docker.sh` (Ubuntu 20.04 builder), or run `./build_viz.sh` directly on a machine whose glibc version is the same as or older than the deployment target.
+
+### 2. ImportError: No module named 'magicbot_z1_python'
 
 **Solution:**
 - Check if `PYTHONPATH` is set correctly
@@ -99,7 +165,7 @@ echo $PYTHONPATH
 ls -la /path/to/magicbot_z1_sdk/build/magicbot_z1_python.cpython-*.so
 ```
 
-### 2. Library File Not Found Error
+### 3. Library File Not Found Error
 
 **Solution:**
 - Set `LD_LIBRARY_PATH` environment variable
@@ -109,7 +175,7 @@ ls -la /path/to/magicbot_z1_sdk/build/magicbot_z1_python.cpython-*.so
 export LD_LIBRARY_PATH=/path/to/magicbot_z1_sdk/build/install/lib:$LD_LIBRARY_PATH
 ```
 
-### 3. Python Version Mismatch
+### 4. Python Version Mismatch
 
 **Solution:**
 - Confirm the Python version used matches the version used during build

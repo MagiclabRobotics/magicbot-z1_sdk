@@ -22,6 +22,7 @@ void signalHandler(int signum) {
 void print_help() {
   std::cout << "Key Function Demo Program\n\n";
   std::cout << "High-Level Motion Control Function Description:\n";
+  std::cout << "  0        Function 0: Read current gait\n";
   std::cout << "  1        Function 1: Recovery stand\n";
   std::cout << "  2        Function 2: Balance stand\n";
   std::cout << "  3        Function 3: Execute trick - greeting action\n";
@@ -52,6 +53,20 @@ int getch() {
   return ch;
 }
 
+void ReadCurrentGait() {
+  // Get high-level motion controller
+  auto& controller = robot.GetHighLevelMotionController();
+  GaitMode gait;
+  auto status = controller.GetGait(gait);
+  if (status.code != ErrorCode::OK) {
+    std::cerr << "read current gait failed"
+              << ", code: " << status.code
+              << ", message: " << status.message << std::endl;
+    return;
+  }
+  std::cout << "current gait: " << (int)gait << std::endl;
+}
+
 void RecoveryStand() {
   // Get high-level motion controller
   auto& controller = robot.GetHighLevelMotionController();
@@ -64,6 +79,7 @@ void RecoveryStand() {
               << ", message: " << status.message << std::endl;
     return;
   }
+  std::cout << "robot gait set to GAIT_RECOVERY_STAND successfully." << std::endl;
 }
 
 void BalanceStand() {
@@ -86,7 +102,7 @@ void ExecuteTrick() {
   auto& controller = robot.GetHighLevelMotionController();
 
   // Execute trick
-  auto status = controller.ExecuteTrick(TrickAction::ACTION_LEFT_GREETING);
+  auto status = controller.ExecuteTrick(TrickAction::ACTION_SHAKE_HEAD);
   if (status.code != ErrorCode::OK) {
     std::cerr << "execute robot trick failed"
               << ", code: " << status.code
@@ -133,7 +149,7 @@ int main(int argc, char* argv[]) {
 
   print_help();
 
-  std::string local_ip = "192.168.54.111";
+  std::string local_ip = "192.168.54.123";
   // Configure local IP address for direct ethernet connection to robot and initialize SDK
   if (!robot.Initialize(local_ip)) {
     std::cerr << "robot sdk initialize failed." << std::endl;
@@ -172,6 +188,10 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Key ASCII: " << key << ", Character: " << static_cast<char>(key) << std::endl;
     switch (key) {
+      case '0': {
+        ReadCurrentGait();
+        break;
+      }
       case '1': {
         RecoveryStand();
         break;

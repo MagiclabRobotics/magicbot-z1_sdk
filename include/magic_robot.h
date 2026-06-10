@@ -44,9 +44,15 @@ class MAGIC_EXPORT_API MagicRobot final : public NonCopyable {
   /**
    * @brief Initialize robot system, including controllers, network and other sub-modules.
    * @param local_ip Local IP address for communication binding or identity identification.
+   * @param robot_type Robot SKU type, used to configure joint parameter sets.
    * @return Whether initialization was successful.
    */
-  bool Initialize(const std::string& local_ip);
+  bool Initialize(const std::string& local_ip, RobotType robot_type = RobotType::Z1_V3_HAND_S01);
+
+  /**
+   * @brief Get the robot type configured during Initialize.
+   */
+  RobotType GetRobotType() const;
 
   /**
    * @brief Shutdown robot system and release resources.
@@ -100,6 +106,12 @@ class MAGIC_EXPORT_API MagicRobot final : public NonCopyable {
    * @return Reference type for users to control specific joints/components.
    */
   LowLevelMotionController& GetLowLevelMotionController();
+
+  /**
+   * @brief Get upper-body motion controller object.
+   * @return Reference type for users to control mixed upper-body joints.
+   */
+  UpperBodyMotionController& GetUpperBodyMotionController();
 
   /**
    * @brief Get audio controller object.

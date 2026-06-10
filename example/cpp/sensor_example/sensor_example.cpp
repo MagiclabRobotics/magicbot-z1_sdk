@@ -11,6 +11,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <chrono>
 
 using namespace magic::z1;
 
@@ -191,7 +192,21 @@ class SensorManager {
                     << imu->linear_acceleration[2] << "]" << std::endl;
           std::cout << std::setprecision(2);
           std::cout << "Temperature: " << imu->temperature << std::endl;
+
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - imu->timestamp;
+          std::cout << "Lidar IMU data timestamp duration: " << duration / 1000000.0 << " ms" << std::endl;
           std::cout << "========================================" << std::endl;
+        }
+
+        // Lidar IMU data frequency
+        static int64_t last_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        if (count % 1000 == 0) {
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - last_timestamp;
+          double frequency = 1000.0 / (duration / 1000000000.0);
+          std::cout << "*** Lidar IMU frequency: " << frequency << " Hz" << std::endl;
+          last_timestamp = current_timestamp;
         }
       });
       subscriptions_["lidar_imu"] = true;
@@ -220,7 +235,21 @@ class SensorManager {
           if (!pointcloud->fields.empty()) {
             std::cout << "First field name: " << pointcloud->fields[0].name << std::endl;
           }
+          
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - pointcloud->header.stamp;
+          std::cout << "Lidar Point Cloud data timestamp duration: " << duration / 1000000.0 << " ms" << std::endl;
           std::cout << "========================================" << std::endl;
+        }
+
+        // Lidar Point Cloud data frequency
+        static int64_t last_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        if (count % 1000 == 0) {
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - last_timestamp;
+          double frequency = 1000.0 / (duration / 1000000000.0);
+          std::cout << "*** Lidar Point Cloud frequency: " << frequency << " Hz" << std::endl;
+          last_timestamp = current_timestamp;
         }
       });
       subscriptions_["lidar_point_cloud"] = true;
@@ -243,7 +272,21 @@ class SensorManager {
           std::cout << "Size: " << img->data.size() << " bytes" << std::endl;
           std::cout << "Resolution: " << img->width << "x" << img->height << std::endl;
           std::cout << "Encoding: " << img->encoding << std::endl;
+
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - img->header.stamp;
+          std::cout << "Head RGBD Color Image data timestamp duration: " << duration / 1000000.0 << " ms" << std::endl;
           std::cout << "========================================" << std::endl;
+        }
+
+        // Head RGBD Color Image data frequency
+        static int64_t last_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        if (count % 1000 == 0) {
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - last_timestamp;
+          double frequency = 1000.0 / (duration / 1000000000.0);
+          std::cout << "*** Head RGBD Color Image frequency: " << frequency << " Hz" << std::endl;
+          last_timestamp = current_timestamp;
         }
       });
       subscriptions_["head_rgbd_color_image"] = true;
@@ -265,7 +308,21 @@ class SensorManager {
           std::cout << "Size: " << img->data.size() << " bytes" << std::endl;
           std::cout << "Resolution: " << img->width << "x" << img->height << std::endl;
           std::cout << "Encoding: " << img->encoding << std::endl;
+
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - img->header.stamp;
+          std::cout << "Head RGBD Depth Image data timestamp duration: " << duration / 1000000.0 << " ms" << std::endl;
           std::cout << "========================================" << std::endl;
+        }
+
+        // Head RGBD Depth Image data frequency
+        static int64_t last_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        if (count % 1000 == 0) {
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - last_timestamp;
+          double frequency = 1000.0 / (duration / 1000000000.0);
+          std::cout << "*** Head RGBD Depth Image frequency: " << frequency << " Hz" << std::endl;
+          last_timestamp = current_timestamp;
         }
       });
       subscriptions_["head_rgbd_depth_image"] = true;
@@ -310,7 +367,21 @@ class SensorManager {
           std::cout << "Frame ID: " << frame->header.frame_id << std::endl;
           std::cout << "Format: " << frame->format << std::endl;
           std::cout << "Data size: " << frame->data.size() << " bytes (left+right concatenated)" << std::endl;
+
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - frame->header.stamp;
+          std::cout << "Binocular Image data timestamp duration: " << duration / 1000000.0 << " ms" << std::endl;
           std::cout << "========================================" << std::endl;
+        }
+
+        // Binocular Image data frequency
+        static int64_t last_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        if (count % 1000 == 0) {
+          int64_t current_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+          int64_t duration = current_timestamp - last_timestamp;
+          double frequency = 1000.0 / (duration / 1000000000.0);
+          std::cout << "*** Binocular Image frequency: " << frequency << " Hz" << std::endl;
+          last_timestamp = current_timestamp;
         }
       });
       subscriptions_["binocular_image"] = true;
