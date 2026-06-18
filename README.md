@@ -51,6 +51,7 @@ Assuming the SDK development PC is connected to the robot through network interf
 - CMake ≥ 3.16
 - Make build system
 - Eigen3
+- OpenCV ≥ 4.5 (`core`, `imgcodecs`, `imgproc`; Ubuntu: `libopencv-dev`)
 - python3.10
 
 ### 3. Programming Language
