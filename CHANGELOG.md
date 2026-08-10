@@ -5,7 +5,7 @@ All significant changes will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and adheres to [Semantic Versioning](https://semver.org/).
 
-## [v1.2.6] - 2026-08-10
+## [v1.2.5-hotfix1] - 2026-08-10
 
 **Corresponding Core Firmware Version: >= MagicBot-Z1 20260708-v1.1.2**
 
