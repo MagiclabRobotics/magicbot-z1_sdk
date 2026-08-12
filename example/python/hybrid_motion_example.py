@@ -5,6 +5,7 @@ import logging
 import signal
 import sys
 import termios
+import threading
 import time
 import tty
 from typing import Optional
@@ -22,6 +23,85 @@ running = True
 pos = 0.0
 upper_body_state_counter = 0
 all_hand_state_counter = 0
+
+# ---- 状态缓存(由订阅回调更新), 用于记录初始位资与轨迹 ----
+upper_pos_lock = threading.Lock()  # noqa (暂用 list + GIL, 简单同步)
+cur_upper_pos: list = []   # 最新上肢关节位置(12)
+cur_hand_pos: list = []    # 最新双手手指位置(左手6 + 右手6 平铺)
+boot_upper: list = []      # 上电初始位资(首帧快照)
+boot_hand: list = []
+boot_valid = False
+# 参考位
+home_upper: list = []
+home_hand: list = []
+home_valid = False
+
+# 与 C++/bridge 相同的关节配置。运行时按型号(V3/V5)选用:
+# 上肢关节顺序均为 左臂 + 右臂 + 腰(joint_wy) + 头(joint_hy)
+#  - V3: 左臂5(joint_la1..5) + 右臂5(joint_ra1..5) + 腰 + 头 = 12 关节
+#  - V5: 左臂7(joint_la1..7) + 右臂7(joint_ra1..7) + 腰 + 头 = 16 关节
+
+# ---- V3 配置 ----
+UPPER_JOINT_NAMES_V3 = [
+    "joint_la1", "joint_la2", "joint_la3", "joint_la4", "joint_la5",
+    "joint_ra1", "joint_ra2", "joint_ra3", "joint_ra4", "joint_ra5",
+    "joint_wy",  "joint_hy",
+]
+ARM_KP_V3 = [500, 500, 300, 500, 350, 500, 500, 300, 500, 350, 60, 50]
+ARM_KD_V3 = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 8]
+ARM_TOQ_V3 = [-5, 4, 0, -3, 0, -5, -4, 0, -3, 0, 0, 0]
+ARM_POS_MIN_V3 = [-2.88, -0.175, -2.618, -0.96, -1.571, -2.88, -2.2515, -2.618, -0.96, -1.571, -2.79, -0.6981]
+ARM_POS_MAX_V3 = [2.88, 2.2515, 2.618, 1.5708, 1.571, 2.88, 0.175, 2.618, 1.5708, 1.571, 2.79, 0.6981]
+
+# ---- V5 配置 ----
+UPPER_JOINT_NAMES_V5 = [
+    "joint_la1", "joint_la2", "joint_la3", "joint_la4", "joint_la5", "joint_la6", "joint_la7",
+    "joint_ra1", "joint_ra2", "joint_ra3", "joint_ra4", "joint_ra5", "joint_ra6", "joint_ra7",
+    "joint_wy",  "joint_hy",
+]
+ARM_KP_V5 = [500,500,300,500,350,300,300, 500,500,300,500,350,300,300, 60,50]
+ARM_KD_V5 = [7,7,7,7,7,7,7, 7,7,7,7,7,7,7, 6,8]
+ARM_TOQ_V5 = [-5,4,0,-3,0,0,0, -5,-4,0,-3,0,0,0, 0,0]
+ARM_POS_MIN_V5 = [-2.7925, -0.175, -2.618, -0.96, -1.5708, -1.5708, -1.5708,
+                  -2.7925, -2.2515, -2.618, -0.96, -1.5708, -1.5708, -1.5708,
+                  -2.79, -0.6981]
+ARM_POS_MAX_V5 = [2.7925, 2.2515, 2.618, 1.5708, 1.5708, 1.5708, 1.5708,
+                  2.7925, 0.175,  2.618, 1.5708, 1.5708, 1.5708, 1.5708,
+                  2.79,   0.6981]
+
+# 当前生效的配置(initialize 后按型号选择)
+UPPER_JOINT_NAMES = UPPER_JOINT_NAMES_V3
+ARM_KP = ARM_KP_V3
+ARM_KD = ARM_KD_V3
+ARM_TOQ = ARM_TOQ_V3
+ARM_POS_MIN = ARM_POS_MIN_V3
+ARM_POS_MAX = ARM_POS_MAX_V3
+
+HAND_JOINT_NAMES = ["little", "ring", "middle", "forefinger", "thumb_bend", "thumb_rot"]
+HAND_POS_MIN = [0.5, 0.5, 0.5, 0.5, 0.3, 1.63]
+HAND_POS_MAX = [2.76, 2.76, 2.76, 2.76, 0.7, 2.72]
+
+
+def setup_robot_config():
+    """按 robot.get_robot_type() 选择 V3/V5 内置关节配置(与 C++ SetupJointConfig 一致)。"""
+    global UPPER_JOINT_NAMES, ARM_KP, ARM_KD, ARM_TOQ, ARM_POS_MIN, ARM_POS_MAX
+    arm = magicbot.ARM_JOINT_NUM  # V3=10, V5=14
+    if arm == 14:
+        UPPER_JOINT_NAMES = UPPER_JOINT_NAMES_V5
+        ARM_KP = ARM_KP_V5
+        ARM_KD = ARM_KD_V5
+        ARM_TOQ = ARM_TOQ_V5
+        ARM_POS_MIN = ARM_POS_MIN_V5
+        ARM_POS_MAX = ARM_POS_MAX_V5
+        logging.info("[config] RobotType=V5 (arm=14), upper joints=16")
+    else:
+        UPPER_JOINT_NAMES = UPPER_JOINT_NAMES_V3
+        ARM_KP = ARM_KP_V3
+        ARM_KD = ARM_KD_V3
+        ARM_TOQ = ARM_TOQ_V3
+        ARM_POS_MIN = ARM_POS_MIN_V3
+        ARM_POS_MAX = ARM_POS_MAX_V3
+        logging.info("[config] RobotType=V3 (arm=10), upper joints=12")
 
 
 def signal_handler(signum, frame):
@@ -58,6 +138,15 @@ def print_help():
     logging.info("  7        Function 7: Unsubscribe all hand state")
     logging.info("  8        Function 8: Publish all hand command")
     logging.info("")
+    logging.info("")
+    logging.info("Arm/Hand Pose Functions:")
+    logging.info("  m        Manual guide arm pose (enter joint angles one by one)")
+    logging.info("  n        Manual guide hand pose (enter finger angles one by one)")
+    logging.info("  r        Record current arm & hand pose as reference pose")
+    logging.info("  f        Arms & hands move to reference pose")
+    logging.info("  h        Arms & hands return to boot pose")
+    logging.info("  z        Arms & hands return to all-zero pose")
+    logging.info("")
     logging.info("  ESC      Exit program")
     logging.info("  ?        Function ?: Print help")
 
@@ -71,6 +160,17 @@ def getch():
     finally:
         termios.tcsetattr(fd, termios.TCSANOW, old_settings)
     return ch
+
+
+def _enter_line_input():
+    """切到 cbreak(关ICANON/按字节输入)但保留 ECHO, 让输入数字即时回显。返回旧设置。"""
+    fd = sys.stdin.fileno()
+    oldt = termios.tcgetattr(fd)
+    newt = termios.tcgetattr(fd)
+    newt[3] &= ~(termios.ICANON)   # 去 ICANON(按字节)
+    newt[3] |= termios.ECHO        # 保留 ECHO(显示输入)
+    termios.tcsetattr(fd, termios.TCSANOW, newt)
+    return fd, oldt
 
 
 def get_gait():
@@ -133,23 +233,23 @@ def subscribe_upper_body_state():
         pass
 
     def upper_body_state_callback(joint_state):
-        global upper_body_state_counter
+        global upper_body_state_counter, cur_upper_pos, boot_upper, boot_valid
         upper_body_state_counter += 1
-        if upper_body_state_counter % 100 == 0:
-            logging.info("upper body state timestamp: %d", joint_state.timestamp)
+        # 缓存当前上肢位置
+        cur_upper_pos = [j.posL for j in joint_state.joints]
+        if not boot_valid:
+            boot_upper = list(cur_upper_pos)
+            boot_valid = True
+        # 首帧打印一次
+        if upper_body_state_counter == 1:
+            logging.info("--- upper body state (first frame) ---")
             for ii in range(len(joint_state.joints)):
-                joint = joint_state.joints[ii]
+                j = joint_state.joints[ii]
                 logging.info(
-                    "joint %d status_word=%d posH=%s posL=%s vel=%s toq=%s current=%s err=%s",
-                    ii,
-                    joint.status_word,
-                    joint.posH,
-                    joint.posL,
-                    joint.vel,
-                    joint.toq,
-                    joint.current,
-                    joint.err_code,
+                    "joint %d posL=%s posH=%s vel=%s toq=%s",
+                    ii, j.posL, j.posH, j.vel, j.toq,
                 )
+            logging.info("---------------------------------------")
 
     controller.subscribe_upper_body_state(upper_body_state_callback)
     logging.info("Subscribed to upper body state")
@@ -231,12 +331,20 @@ def subscribe_all_hand_state():
         pass
 
     def all_hand_state_callback(all_hand_state):
-        global all_hand_state_counter
+        global all_hand_state_counter, cur_hand_pos, boot_hand
         all_hand_state_counter += 1
-        if all_hand_state_counter % 100 == 0:
-            logging.info("all hand state timestamp: %d", all_hand_state.timestamp)
+        # 缓存双手手指位置(平铺: 左手6 + 右手6)
+        cur_hand_pos = []
+        for s in all_hand_state.state:
+            cur_hand_pos.extend(list(s.pos))
+        if not boot_valid:
+            boot_hand = list(cur_hand_pos)
+        # 首帧打印
+        if all_hand_state_counter == 1:
+            logging.info("--- all hand state (first frame) ---")
             for ii in range(len(all_hand_state.state)):
                 logging.info("hand %d pos: %s", ii, list(all_hand_state.state[ii].pos))
+            logging.info("------------------------------------")
 
     controller.subscribe_all_hand_state(all_hand_state_callback)
     logging.info("Subscribed to all hand state")
@@ -270,6 +378,236 @@ def publish_all_hand_command():
     logging.info("Published all hand command")
 
 
+# ============ 双臂+双手 摆放 (与 C++ 例程一致) ============
+
+def clamp_arm_pos(idx, pos):
+    lo = ARM_POS_MIN[idx]
+    hi = ARM_POS_MAX[idx]
+    if pos < lo or pos > hi:
+        logging.error("[clamp] joint %d (%s) target %s out of range [%s, %s]. Ignored.",
+                      idx, UPPER_JOINT_NAMES[idx], pos, lo, hi)
+        return False
+    return True
+
+
+def clamp_hand_pos(idx, pos):
+    lo = HAND_POS_MIN[idx]
+    hi = HAND_POS_MAX[idx]
+    if pos < lo or pos > hi:
+        logging.error("[clamp] hand joint %d (%s) target %s out of range [%s, %s]. Ignored.",
+                      idx, HAND_JOINT_NAMES[idx], pos, lo, hi)
+        return False
+    return True
+
+
+def move_to_group(target_upper, target_hand):
+    """一次性发布整组目标(与 C++ MoveToGroup 一致)。m/n 都走这里: 完整发手臂 + 灵巧手,
+    无论手部是否有数据, 都发(空则全 0)。"""
+    global robot
+    controller = robot.get_upper_body_motion_controller()
+    # 用运行时关节数(而非编译期常量), 支持 V3(12)/V5(16)
+    arm_num = magicbot.get_arm_joint_num() + magicbot.get_waist_joint_num() + magicbot.get_head_joint_num()
+
+    cmd = magicbot.JointCommand()
+    cmd.timestamp = int(time.time() * 1e9)
+    cmd.motion_mode = 1
+    for i in range(arm_num):
+        joint = magicbot.SingleJointCommand()
+        joint.operation_mode = 3
+        joint.pos = target_upper[i] if i < len(target_upper) else 0.0
+        joint.vel = 0.0
+        joint.toq = ARM_TOQ[i] if i < len(ARM_TOQ) else 0.0
+        joint.kp = ARM_KP[i] if i < len(ARM_KP) else 0.0
+        joint.kd = ARM_KD[i] if i < len(ARM_KD) else 0.0
+        cmd.joints.append(joint)
+    status = controller.publish_upper_body_command(cmd)
+    if status.code != magicbot.ErrorCode.OK:
+        logging.error("publish upper body command failed, code: %s, message: %s", status.code, status.message)
+        return
+
+    # 手部: 与 C++ 一致, 无论是否有数据都发布(空则全 0)
+    hand_cmd = magicbot.HandCommand()
+    hand_cmd.timestamp = cmd.timestamp
+    for h in range(magicbot.HAND_NUM):
+        sc = magicbot.SingleHandJointCommand()
+        sc.operation_mode = 4  # 位置控制模式
+        for f in range(magicbot.HAND_JOINT_NUM):
+            idx = h * magicbot.HAND_JOINT_NUM + f
+            sc.pos.append(target_hand[idx] if idx < len(target_hand) else 0.0)
+        hand_cmd.cmd.append(sc)
+    status = controller.publish_all_hand_command(hand_cmd)
+    if status.code != magicbot.ErrorCode.OK:
+        logging.error("publish all hand command failed, code: %s, message: %s", status.code, status.message)
+    logging.info("[move] published upper-body(%d) + both hands command (movej).", arm_num)
+
+
+def _get_current_pose():
+    """返回 (cur_upper, cur_hand); 上肢缓存为空则返回 (None, None)"""
+    if not cur_upper_pos:
+        return None, None
+    return list(cur_upper_pos), list(cur_hand_pos)
+
+
+def manual_guide_pose():
+    """m: 手部手动引导(逐臂关节输入后发布完整指令)。
+    - 手臂控制值 = 本次输入目标(target_upper)
+    - 灵巧手控制值 = 读取当前灵巧手关节数据(start_hand), 无则全 0
+    """
+    start_upper, start_hand = _get_current_pose()
+    if start_upper is None:
+        logging.error("[guide] no state cache yet. Press 3 to subscribe then wait.")
+        return
+    if len(start_upper) < len(UPPER_JOINT_NAMES):
+        logging.error("[guide] unexpected upper joint count: %d", len(start_upper))
+        return
+
+    target_upper = list(start_upper)  # 默认保持当前
+    # 灵巧手控制值: 读取当前灵巧手关节数据, 无则全 0
+    if start_hand:
+        target_hand = list(start_hand)
+    else:
+        target_hand = [0.0] * (magicbot.HAND_NUM * magicbot.HAND_JOINT_NUM)
+        print("[guide] 未检测到灵巧手数据, 灵巧手控制值取全 0。")
+    logging.info("\n==== 手动引导摆位: 一次输入 12 关节目标, 最后一次性发布 ====")
+    logging.info("对每个关节输入目标角(rad), 回车=保持当前; 输入 q=中止; 全部输完后一次发布。")
+
+    fd = sys.stdin.fileno()
+    fd, oldt = _enter_line_input()  # 关ICANON保留ECHO, 数字即时显示
+    try:
+        aborted = False
+        for i in range(len(UPPER_JOINT_NAMES)):
+            cur = cur_upper_pos[i] if i < len(cur_upper_pos) else 0.0
+            print(f"  [{i}] {UPPER_JOINT_NAMES[i]}  当前 {cur}  范围 [{ARM_POS_MIN[i]}, {ARM_POS_MAX[i]}] rad")
+            line = input("     输入目标角 [回车=保持, q=中止]: ").strip()
+            if line == "":
+                print(f"[guide] keep {UPPER_JOINT_NAMES[i]} = {cur}")
+                continue
+            if line.lower() == "q":
+                print("[guide] aborted.")
+                aborted = True
+                break
+            try:
+                target = float(line)
+            except ValueError:
+                print(f"[guide] invalid, keep = {cur}")
+                continue
+            if not clamp_arm_pos(i, target):
+                continue
+            target_upper[i] = target
+            print(f"[guide] set {UPPER_JOINT_NAMES[i]} = {target}")
+    finally:
+        termios.tcsetattr(fd, termios.TCSANOW, oldt)
+
+    if aborted:
+        return
+
+    print("\n==== 发布整组目标 ====")
+    for i in range(len(UPPER_JOINT_NAMES)):
+        print(f"  [{i}] {UPPER_JOINT_NAMES[i]} = {target_upper[i]}")
+    move_to_group(target_upper, target_hand)
+    print("[guide] 已发布. 按 'r' 记录此姿态为参考位, 之后按 'f' 可复现。")
+
+
+def manual_guide_hand():
+    """手部手动引导: 左/右手各6指, 逐指输入, 最后发布。
+    无论手部是否有数据都发完整指令(move_to_group 统一发手臂+灵巧手):
+    - 手臂控制值取当前实际位置(start_upper)
+    - 灵巧手控制值由本次输入决定(target_hand; 无初始数据则从全0起)
+    """
+    start_upper, start_hand = _get_current_pose()
+    if start_upper is None:
+        logging.error("[guide] no state cache yet. Press 3 to subscribe then wait.")
+        return
+
+    target_hand = list(start_hand) if start_hand else [0.0] * (magicbot.HAND_NUM * magicbot.HAND_JOINT_NUM)
+    print("\n==== 手动引导摆位 - 双手: 一次输入双手目标, 最后一次性发布 ====")
+    print(f"每只手 6 指: {', '.join(HAND_JOINT_NAMES)}")
+    if not start_hand:
+        print("[guide] 未检测到灵巧手数据, 手指将从全 0 开始; 发布时仍会发完整手臂+灵巧手命令。")
+    print("回车=保持当前; 输入 q=中止; 全部输完后一次发布。")
+
+    fd, oldt = _enter_line_input()  # 关ICANON保留ECHO, 数字即时显示
+    try:
+        aborted = False
+        for h in range(magicbot.HAND_NUM):
+            print(f"\n--- {'左手' if h == 0 else '右手'} ---")
+            for f in range(magicbot.HAND_JOINT_NUM):
+                idx = h * magicbot.HAND_JOINT_NUM + f
+                cur = start_hand[idx] if idx < len(start_hand) else 0.0
+                print(f"  [{idx}] {HAND_JOINT_NAMES[f]}  当前 {cur}  范围 [{HAND_POS_MIN[f]}, {HAND_POS_MAX[f]}] rad")
+                line = input("     输入目标角 [回车=保持, q=中止]: ").strip()
+                if line == "":
+                    print(f"[guide] keep hand {idx} ({HAND_JOINT_NAMES[f]}) = {cur}")
+                    continue
+                if line.lower() == "q":
+                    print("[guide] aborted.")
+                    aborted = True
+                    break
+                try:
+                    target = float(line)
+                except ValueError:
+                    print(f"[guide] invalid, keep = {cur}")
+                    continue
+                if not clamp_hand_pos(f, target):
+                    continue
+                target_hand[idx] = target
+                print(f"[guide] set hand {idx} ({HAND_JOINT_NAMES[f]}) = {target}")
+            if aborted:
+                break
+    finally:
+        termios.tcsetattr(fd, termios.TCSANOW, oldt)
+
+    if aborted:
+        return
+
+    print("\n==== 发布双手目标 ====")
+    for h in range(magicbot.HAND_NUM):
+        print(f"  {'左手' if h == 0 else '右手'}: " + "  ".join(
+            f"{HAND_JOINT_NAMES[f]}={target_hand[h * magicbot.HAND_JOINT_NUM + f]}"
+            for f in range(magicbot.HAND_JOINT_NUM)))
+    move_to_group(start_upper, target_hand)
+    print("[guide] 已发布双手. 按 'r' 记录此姿态为参考位, 之后按 'f' 可复现。")
+
+
+def record_reference():
+    global home_upper, home_hand, home_valid
+    start_upper, start_hand = _get_current_pose()
+    if start_upper is None:
+        logging.error("[record] no upper-body state cache yet. Press 3 to subscribe, then wait a moment.")
+        return
+    home_upper = start_upper
+    home_hand = start_hand
+    home_valid = True
+    logging.info("[record] reference pose recorded. upper=%d joints, hand=%d fingers.",
+                 len(home_upper), len(home_hand))
+
+
+def move_to_reference():
+    global home_upper, home_hand, home_valid
+    if not home_valid:
+        logging.error("[move] no reference recorded. Press 'r' to record current pose first.")
+        return
+    logging.info("[move] moving to reference pose...")
+    move_to_group(list(home_upper), list(home_hand))
+    logging.info("[move] reached target pose.")
+
+
+def move_to_home():
+    if not boot_valid or not boot_upper:
+        logging.error("[move] no boot pose yet. Press 3 to subscribe, then wait a moment.")
+        return
+    logging.info("[move] returning all arms & hands to boot pose...")
+    move_to_group(list(boot_upper), list(boot_hand))
+    logging.info("[move] reached target pose.")
+
+
+def move_to_zero():
+    arm_num = magicbot.get_arm_joint_num() + magicbot.get_waist_joint_num() + magicbot.get_head_joint_num()
+    logging.info("[move] returning all arms & hands to all-zero pose...")
+    move_to_group([0.0] * arm_num, [0.0] * (magicbot.HAND_NUM * magicbot.HAND_JOINT_NUM))
+    logging.info("[move] reached target pose.")
+
+
 def main():
     global robot, running
     sys.stdout.reconfigure(line_buffering=True)
@@ -286,6 +624,8 @@ def main():
             logging.error("robot sdk initialize failed.")
             robot.shutdown()
             return -1
+        # 根据实际型号(V3/V5)选择关节配置
+        setup_robot_config()
 
         status = robot.connect()
         if status.code != magicbot.ErrorCode.OK:
@@ -332,6 +672,18 @@ def main():
                 unsubscribe_all_hand_state()
             elif key == "8":
                 publish_all_hand_command()
+            elif key.lower() == "m":
+                manual_guide_pose()
+            elif key.lower() == "n":
+                manual_guide_hand()
+            elif key.lower() == "r":
+                record_reference()
+            elif key.lower() == "f":
+                move_to_reference()
+            elif key.lower() == "h":
+                move_to_home()
+            elif key.lower() == "z":
+                move_to_zero()
             elif key == "?":
                 print_help()
             else:

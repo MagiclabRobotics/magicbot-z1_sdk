@@ -824,7 +824,7 @@ GAIT_NAME_BY_INT: dict[int, str] = {
     0: "GAIT_PASSIVE",
     1: "GAIT_RECOVERY_STAND",
     46: "GAIT_BALANCE_STAND",
-    79: "GAIT_HUMANOID_WALK",
+    78: "GAIT_HUMANOID_WALK",
     200: "GAIT_LOWLEVL_SDK",
     201: "GAIT_HYBRID_SDK",
     9999: "GAIT_NONE",
@@ -1457,7 +1457,7 @@ class RobotSession:
             self.joy_thread.join(timeout=1.0)
             self.joy_thread = None
 
-    def refresh_maps(self) -> Tuple[bool, str, List[str]]:
+    def refresh_maps(self, prefer_name: str = "") -> Tuple[bool, str, List[str]]:
         def _do():
             st, info = self.slam.get_all_map_info()
             if not _status_ok(st):
@@ -1466,8 +1466,14 @@ class RobotSession:
             with self._lock:
                 self.current_map_name = info.current_map_name
             if info.map_infos:
-                self._load_map_raster(info.map_infos[0])
-                self.fetch_map_path(info.map_infos[0].map_name)
+                # 优先加载 prefer_name 对应的地图栅格，否则 fallback 到 current_map_name 或第一张
+                target_name = prefer_name or info.current_map_name or info.map_infos[0].map_name
+                target = next(
+                    (m for m in info.map_infos if m.map_name == target_name),
+                    info.map_infos[0],
+                )
+                self._load_map_raster(target)
+                self.fetch_map_path(target.map_name)
             return True, f"maps={len(names)} current={info.current_map_name}", names
 
         ok, msg, names = False, "", []
@@ -2455,7 +2461,7 @@ class NavVizApp:
             left_scroll,
             "流程 C（接 SLAM 流程 B 步骤⑥）：⑦ 刷新地图 → ⑧ 开启导航 → ⑨ 设初始位姿 "
             "→ ⑩ 地图选目标点并导航。绿箭头=机器人；黄箭头=初始位姿；红叉=目标。"
-            "地图：左键设位置，右键按住拖动旋转朝向，左键双击提交。",
+            "地图：左键设位置，右键双击选择旋转朝向，左键双击提交。",
             wraplength=340,
         )
 
@@ -2480,7 +2486,7 @@ class NavVizApp:
             phase_c,
             "⑨",
             "设置初始位姿",
-            "填写位置与姿态(Roll/Pitch/Yaw)；地图左键设位置、右键按住旋转设朝向；左键双击提交。",
+            "填写位置与姿态(Roll/Pitch/Yaw)；地图左键设位置、右键双击选择旋转朝向；左键双击提交。",
             [
                 ("提交 Init pose", self._on_init_pose, True),
                 ("填入定位位姿", self._on_copy_init_pose, False),
@@ -2596,7 +2602,7 @@ class NavVizApp:
 
         ttk.Label(
             plot_card,
-            text="左键=位置  ·  右键按住拖动=旋转朝向  ·  左键双击=提交",
+            text="左键=位置  ·  右键双击选择旋转朝向  ·  左键双击=提交",
             style="Hint.TLabel",
         ).pack(pady=(0, 8))
 
@@ -2677,54 +2683,73 @@ class NavVizApp:
         if loc and loc.is_localization:
             x, y = loc.pose.position[0], loc.pose.position[1]
             yaw = loc.pose.orientation[2]
-            dx = 0.4 * math.cos(yaw)
-            dy = 0.4 * math.sin(yaw)
+            dx = 0.5 * math.cos(yaw)
+            dy = 0.5 * math.sin(yaw)
             pose_color = "#34d399"
             self.ax.add_patch(
                 FancyArrow(
-                    x,
-                    y,
-                    dx,
-                    dy,
-                    width=0.08,
-                    color=pose_color,
+                    x, y, dx, dy,
+                    width=0.12, head_width=0.30, head_length=0.25,
+                    color=pose_color, zorder=3,
                     length_includes_head=True,
                 )
             )
-            self.ax.plot(x, y, "o", color=pose_color, ms=7)
+            self.ax.plot(x, y, "o", color=pose_color, ms=10, markeredgecolor="#a7f3d0", mew=2, zorder=4)
 
         if self._map_init_pose:
             ix, iy, iyaw = self._map_init_pose
-            self.ax.plot(ix, iy, "o", color="#fbbf24", ms=8, markeredgecolor="#fef3c7", mew=1.5)
-            idx = 0.35 * math.cos(iyaw)
-            idy = 0.35 * math.sin(iyaw)
+            # 大圆点 + 粗边缘 + 大字标注
+            self.ax.plot(
+                ix, iy, "o",
+                color="#fbbf24", ms=16, markeredgecolor="#f59e0b", mew=3, zorder=5,
+            )
+            self.ax.plot(
+                ix, iy, "o",
+                color="#fef3c7", ms=10, markeredgecolor="none", zorder=6,
+            )
+            idx = 0.5 * math.cos(iyaw)
+            idy = 0.5 * math.sin(iyaw)
             self.ax.add_patch(
                 FancyArrow(
-                    ix,
-                    iy,
-                    idx,
-                    idy,
-                    width=0.07,
-                    color="#fbbf24",
+                    ix, iy, idx, idy,
+                    width=0.12, head_width=0.30, head_length=0.25,
+                    color="#fbbf24", zorder=7,
                     length_includes_head=True,
                 )
             )
+            self.ax.text(
+                ix + 0.15, iy + 0.15, "INIT",
+                color="#fbbf24", fontsize=9, fontweight="bold",
+                zorder=8,
+            )
+
         if self._map_goal_pose:
             gx, gy, gyaw = self._map_goal_pose
-            self.ax.plot(gx, gy, "x", color="#f87171", ms=14, mew=2.5)
-            yaw = gyaw
-            gdx = 0.35 * math.cos(yaw)
-            gdy = 0.35 * math.sin(yaw)
+            # 大"X" + 外圈光环 + 箭头
+            self.ax.plot(
+                gx, gy, "x",
+                color="#ef4444", ms=22, mew=4, zorder=5,
+            )
+            # 外圈圆光环
+            self.ax.plot(
+                gx, gy, "o",
+                color="none", markeredgecolor="#ef4444",
+                ms=28, mew=1.5, alpha=0.5, zorder=4,
+            )
+            gdx = 0.5 * math.cos(gyaw)
+            gdy = 0.5 * math.sin(gyaw)
             self.ax.add_patch(
                 FancyArrow(
-                    gx,
-                    gy,
-                    gdx,
-                    gdy,
-                    width=0.07,
-                    color="#fca5a5",
+                    gx, gy, gdx, gdy,
+                    width=0.12, head_width=0.30, head_length=0.25,
+                    color="#f87171", zorder=6,
                     length_includes_head=True,
                 )
+            )
+            self.ax.text(
+                gx + 0.15, gy + 0.15, "GOAL",
+                color="#ef4444", fontsize=9, fontweight="bold",
+                zorder=8,
             )
 
         self.canvas.draw_idle()
@@ -3617,7 +3642,10 @@ class NavVizApp:
         )
 
     def _on_refresh_maps(self) -> None:
-        ok, msg, names = self.session.refresh_maps()
+        # 获取当前选中或已加载的地图名，优先加载对应栅格
+        sel = self.map_list.curselection()
+        prefer = self.map_list.get(sel[0]).strip() if sel else self.session.current_map_name
+        ok, msg, names = self.session.refresh_maps(prefer_name=prefer)
         self.map_list.delete(0, tk.END)
         for n in names:
             self.map_list.insert(tk.END, n)
@@ -3688,7 +3716,11 @@ class NavVizApp:
             return
         st, nav = self.session.slam.get_nav_task_status()
         if _status_ok(st):
-            self._log_action("查询导航状态", True, str(nav))
+            self._log_action(
+                "查询导航状态", True,
+                f"id={nav.id}  status={nav.status.name}  "
+                f"error_code={nav.error_code}  error_desc='{nav.error_desc}'",
+            )
         else:
             self._log_action("查询导航状态", False, st.message)
 

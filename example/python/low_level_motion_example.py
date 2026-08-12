@@ -394,8 +394,22 @@ def main():
         # Clean up resources
         try:
             logging.info("Clean up resources")
-            # Close low-level motion controller
             controller = robot.get_low_level_motion_controller()
+
+            # Exit low-level SDK mode (200) to balance stand (46)
+            status = controller.set_gait(magicbot.GaitMode.GAIT_BALANCE_STAND, 10000)
+            if status.code != magicbot.ErrorCode.OK:
+                logging.error(
+                    "Failed to switch gait to GAIT_BALANCE_STAND, code: %s, message: %s",
+                    status.code,
+                    status.message,
+                )
+            else:
+                logging.info(
+                    "Switched gait from GAIT_LOWLEVL_SDK(200) to GAIT_BALANCE_STAND(46)"
+                )
+
+            # Close low-level motion controller
             controller.shutdown()
             logging.info("Low-level motion controller closed")
 

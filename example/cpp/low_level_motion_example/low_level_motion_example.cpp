@@ -16,12 +16,7 @@ std::atomic<bool> running(true);
 
 void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received.\n";
-
   running = false;
-
-  robot.Shutdown();
-  // Exit process
-  exit(signum);
 }
 
 int main() {
@@ -110,22 +105,21 @@ int main() {
   while (running.load()) {
     // Left arm joints, refer to documentation:
     // Left or right arm joints 1-5 operation_mode needs to switch from mode 200 to mode 4 (series PID mode) for command execution;
-    JointCommand arm_command;
-    arm_command.joints.resize(kArmJointNum);
-    for (int ii = 0; ii < kArmJointNum; ii++) {
-      // Set joint to ready state
-      arm_command.joints[ii].operation_mode = 200;
-      // TODO: Set target position, velocity, torque and gains
-      arm_command.joints[ii].pos = 0.0;
-      arm_command.joints[ii].vel = 0.0;
-      arm_command.joints[ii].toq = 0.0;
-      arm_command.joints[ii].kp = 0.0;
-      arm_command.joints[ii].kd = 0.0;
-      arm_command.joints[ii].extra_kd = 0.0;
-    }
-    // Publish control command
-    controller.PublishArmCommand(arm_command);
-    std::cout << "+++++++++++ publish arm command." << std::endl;
+    // JointCommand arm_command;
+    // arm_command.joints.resize(kArmJointNum);
+    // for (int ii = 0; ii < kArmJointNum; ii++) {
+    //   // Set joint to ready state
+    //   arm_command.joints[ii].operation_mode = 200;
+    //   // TODO: Set target position, velocity, torque and gains
+    //   arm_command.joints[ii].pos = 0.0;
+    //   arm_command.joints[ii].vel = 0.0;
+    //   arm_command.joints[ii].toq = 0.0;
+    //   arm_command.joints[ii].kp = 0.0;
+    //   arm_command.joints[ii].kd = 0.0;
+    //   arm_command.joints[ii].extra_kd = 0.0;
+    // }
+    // controller.PublishArmCommand(arm_command);
+    // std::cout << "+++++++++++ publish arm command." << std::endl;
 
     // JointCommand leg_command;
     // leg_command.joints.resize(kLegJointNum);
@@ -141,10 +135,43 @@ int main() {
     // controller.PublishLegCommand(leg_command);
     // std::cout << "+++++++++++ publish leg command." << std::endl;
 
+    // JointCommand head_command;
+    // head_command.joints.resize(kHeadJointNum);
+    // for (int ii = 0; ii < kHeadJointNum; ii++) {
+    //   head_command.joints[ii].operation_mode = 200;
+    //   head_command.joints[ii].pos = 0.0;
+    //   head_command.joints[ii].vel = 0.0;
+    //   head_command.joints[ii].toq = 0.0;
+    // }
+    // controller.PublishHeadCommand(head_command);
+    // std::cout << "+++++++++++ publish head command." << std::endl;
+
+    // JointCommand waist_command;
+    // waist_command.joints.resize(kWaistJointNum);
+    // for (int ii = 0; ii < kWaistJointNum; ii++) {
+    //   waist_command.joints[ii].operation_mode = 200;
+    //   waist_command.joints[ii].pos = 0.0;
+    //   waist_command.joints[ii].vel = 0.0;
+    //   waist_command.joints[ii].toq = 0.0;
+    // }
+    // controller.PublishWaistCommand(waist_command);
+    // std::cout << "+++++++++++ publish waist command." << std::endl;
+
     // Send control commands at 500Hz frequency (2ms)
     now += std::chrono::microseconds(2000);
     std::this_thread::sleep_until(now);
   }
+
+  // Exit low-level SDK mode (200) to balance stand (46)
+  status = controller.SetGait(GaitMode::GAIT_BALANCE_STAND, 10000);
+  if (status.code != ErrorCode::OK) {
+    std::cerr << "switch gait to GAIT_BALANCE_STAND failed"
+              << ", code: " << status.code
+              << ", message: " << status.message << std::endl;
+    robot.Shutdown();
+    return -1;
+  }
+  std::cout << "switched gait from GAIT_LOWLEVL_SDK(200) to GAIT_BALANCE_STAND(46)." << std::endl;
 
   // Disconnect from robot
   status = robot.Disconnect();

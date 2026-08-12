@@ -278,6 +278,16 @@ class MAGIC_EXPORT_API LowLevelMotionController final : public MotionControllerB
    * @brief Unsubscribe from estimator state data
    */
   void UnsubscribeEstimatorState();
+
+  /**
+   * @brief Switch gait mode from low-level SDK control.
+   * @param gait_mode Target gait mode. Currently only GAIT_BALANCE_STAND(46) is supported.
+   * @param timeout_ms Timeout in milliseconds.
+   * @return Execution status.
+   * @note Only allows switching from GAIT_LOWLEVL_SDK(200) to GAIT_BALANCE_STAND(46).
+   *       On success, cached motion control level is updated to HighLevel.
+   */
+  Status SetGait(const GaitMode gait_mode, int timeout_ms = 10000);
 };
 
 /**

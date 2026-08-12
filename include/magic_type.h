@@ -133,11 +133,11 @@ enum class BatteryState : int8_t {
  * @brief Battery charge/discharge state
  */
 enum class PowerSupplyStatus : int8_t {
-  UNKNOWN = 0,      ///< Unknown state
-  CHARGING = 1,     ///< Battery charging
-  DISCHARGING = 2,  ///< Battery discharging
+  CHARGING = 0,     ///< Battery charging
+  DISCHARGING = 1,  ///< Battery discharging
   NOTCHARGING = 3,  ///< Battery not charging/discharging
   FULL = 4,         ///< Battery fully charged
+  UNKNOWN = 5,      ///< Unknown state
 };
 
 /**
@@ -235,7 +235,7 @@ enum class GaitMode : int32_t {
   GAIT_PASSIVE = 0,         // Idle mode
   GAIT_RECOVERY_STAND = 1,  // Standing lock/standing recovery
   GAIT_BALANCE_STAND = 46,  // Balanced standing (supports movement)
-  GAIT_HUMANOID_WALK = 79,  // Humanoid walking
+  GAIT_HUMANOID_WALK = 78,  // Humanoid walking
   GAIT_LOWLEVL_SDK = 200,   // Low-level control SDK mode
   GAIT_HYBRID_SDK = 201,    // Hybrid control SDK mode
 };
@@ -314,6 +314,10 @@ struct OneHandState {
   std::vector<double> pos;           ///< Actual position
   std::vector<double> toq;           ///< Actual torque
   std::vector<double> cur;           ///< Actual current
+  std::vector<double> touch_x;       ///< X-axis force average, unit: 0.01N
+  std::vector<double> touch_y;       ///< Y-axis force average, unit: 0.01N
+  std::vector<double> touch_z;       ///< Z-axis force average, unit: 0.01N
+  std::vector<double> tof;           ///< TOF data, unit: mm
   std::vector<int32_t> error_code;   ///< Error code
 };
 
